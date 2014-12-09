@@ -1,0 +1,77 @@
+# COMMENT HERE
+# TODO: FEATURE CONTEXT WINDOW
+
+# UNIGRAM
+s0_ne	
+s0_w		a0_w	
+s0_lemma	a0_lemma
+s0_t		a0_t
+s0_dl		a0_dl
+s0_len
+
+
+b0_ne
+b0_w		a0_w
+b0_lemma	a0_lemma
+b0_t		a0_t
+b0_dl		a0_dl
+b0_len
+
+# parent to attach
+#a0_ne
+#a0_w
+#a0_lemma
+#a0_t	
+#a0_dl
+
+# first parent
+s0_p1_ne
+s0_p1_w
+s0_p1_lemma
+s0_p1_t	
+s0_p1_dl
+
+# path
+b0_pathp
+a0_pathp
+
+
+# make conjunction swap specific
+b0_lemma	b0_rsb_dl
+# prevent 'and' swap too greedy
+b0_lemma	b0_nswp
+
+# sentence distance between s0 and b0
+dist1
+
+# BIGRAM
+# s0_lemma b0_lemma
+
+# BIGRAM
+# s0_w 	s0_t	b0_w	b0_t
+# s0_w 	s0_t	b0_w
+# s0_w 	s0_t	b0_t
+# s0_t	b0_w	b0_t
+# s0_w 	b0_w	b0_t
+# s0_t	b0_t
+
+# s0_w	b0_w	b0_dl
+# s0_t	b0_t	b0_dl
+
+# current node and its first parent pair
+# s0_w 	s0_t	s0_p1_w	s0_p1_t
+# s0_w 	s0_t	s0_p1_w
+# s0_w 	s0_t	s0_p1_t
+# s0_t	s0_p1_w	s0_p1_t
+# s0_w 	s0_p1_w	s0_p1_t
+# s0_t	s0_p1_t
+
+# FOR CONTROL VERB;ADDCHILD
+# s0_p1_w	s0_p1_t	s0_lsb_w	s0_lsb_t
+# s0_p1_t	s0_lsb_t
+# s0_p1_w	s0_lsb_w
+
+# a0_rsb_w	a0_rsb_t	a0_r2sb_w	a0_r2sb_t
+# a0_rsb_w	a0_rsb_t
+# a0_r2sb_w	a0_r2sb_t	
+
