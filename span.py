@@ -5,7 +5,7 @@ sentence span mapping to special concepts in amr like name,date-entity,etc.
 
 class Span(object):
     
-    def __init__(self,start,end,entity_tag,words):
+    def __init__(self,start,end,words,entity_tag):
         self.start = start
         self.end = end
         self.entity_tag = entity_tag

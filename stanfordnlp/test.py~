@@ -1,0 +1,5 @@
+import os
+
+
+print os.path.relpath(__file__)
+print os.path.exists('data.py')
