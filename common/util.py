@@ -1,24 +1,21 @@
 # -*- coding:utf-8 -*-
 
 """
-amr graph representaion util
+amr graph representaion and parsing util
 
 @author: Chuan Wang
 @since: 2013-11-20
 """
 
 from collections import defaultdict
-import re
+import re,string
+import numpy as np
 
-def trim_concepts(line):
-    """
-    quote all the string literals
-    """
-    pattern = re.compile('(:name\s*\(n / name\s*:op\d)\s*\(([^:)]+)\)\)')
-    def quote(match):
-        return match.group(1)+' "'+ match.group(2) + '")' 
-    return pattern.sub(quote,line)
+# feature window placeholder
 
+__AUX_PUNCTUATIONS = ["''"]
+def ispunctuation(s):
+    return s in string.punctuation or s in __AUX_PUNCTUATIONS
 
 to_19 = ( 'zero',  '(one|a|an)',   'two',  'three', 'four',   'five',   'six',
           'seven', 'eight', 'nine', 'ten',   'eleven', 'twelve', 'thirteen',
@@ -29,6 +26,26 @@ denom = ( '',
           'quintillion',  'sextillion',      'septillion',    'octillion',      'nonillion',
           'decillion',    'undecillion',     'duodecillion',  'tredecillion',   'quattuordecillion',
           'sexdecillion', 'septendecillion', 'octodecillion', 'novemdecillion', 'vigintillion' )
+
+def uniqify(seq):
+    seen = {}
+    result = []
+    for item in seq:
+        if item in seen: continue
+        seen[item] = 1
+        result.append(item)
+
+    return result
+    
+def trim_concepts(line):
+    """
+    quote all the string literals
+    """
+    pattern = re.compile('(:name\s*\(n / name\s*:op\d)\s*\(([^:)]+)\)\)')
+    def quote(match):
+        return match.group(1)+' "'+ match.group(2) + '")' 
+    return pattern.sub(quote,line)
+
 
 # convert a value < 100 to English.
 def _convert_nn(val):
@@ -119,13 +136,16 @@ class StrLiteral(unicode):
             return "".join(self)
 
 class SpecialValue(str):
-        pass
+    pass
 
 class Quantity(str):
-        pass
+    pass
 
 class Polarity(str):
-        pass
+    pass
+
+class Interrogative(str):
+    pass
 
 class Literal(str):
     def __str__(self):
@@ -134,6 +154,13 @@ class Literal(str):
     def __repr__(self):
             return "".join(self)
 
+# entity class wrap around concept, distinguish between normal concept and abstract concept
+class ETag(str):
+    pass
+# constant variable like quantity 
+class ConstTag(str):
+    pass
+    
 class ListMap(defaultdict):
     '''
     Here we use Nathan Schneider (nschneid)'s nice ListMap implementation
@@ -165,12 +192,14 @@ class ListMap(defaultdict):
     def __init__(self, *args, **kwargs):
         defaultdict.__init__(self, list, *args, **kwargs)
         self._keys = []
+        self._key_value = []
     
     def __setitem__(self, k, v):
         if k in self:
             raise KeyError('Cannot assign to ListMap entry; use replace() or append()')
         else:
             self._keys.append(k)
+            self._key_value.extend([(k,vv) for vv in v])
         return defaultdict.__setitem__(self, k, v)
     
     def __getitem__(self, k):
@@ -181,7 +210,8 @@ class ListMap(defaultdict):
         return dict.__getitem__(self, k)
         
     def items(self):
-        return [(k,v) for k in self._keys for v in self.getall(k)]
+        #return [(k,v) for k in self._keys for v in self.getall(k)]
+        return [(k,v) for k,v in self._key_value]
     
     def values(self):
         return [v for k,v in self.items()]
@@ -191,12 +221,17 @@ class ListMap(defaultdict):
     
     def replace(self, k, v):
         defaultdict.__setitem__(self, k, [v])
+        for i,(m,n) in enumerate(self._key_value):
+            if m == k:
+                self._key_value[i] = (k,v)
         
     def append(self, k, v):
-        defaultdict.__getitem__(self, k).append(v) 
+        defaultdict.__getitem__(self, k).append(v)
+        self._key_value.append((k,v))
     
     def remove(self, k, v):
-        defaultdict.__getitem__(self, k).remove(v)        
+        defaultdict.__getitem__(self, k).remove(v)
+        self._key_value.remove((k,v))
         if not dict.__getitem__(self,k):
             del self[k]
             self._keys.remove(k)
@@ -213,7 +248,7 @@ class ListMap(defaultdict):
 
     def __reduce__(self):
         t = defaultdict.__reduce__(self)
-        return (t[0], ()) + t[2:]
+        return (t[0], ()) + (self.__dict__,) + t[3:]
 
 from collections import deque
 
@@ -254,3 +289,99 @@ class Buffer(deque):
         t = deque.__reduce__(self)
         return (t[0],(t[1][0],)) + t[2:]
         
+class Alphabet(object):
+    """Two way map for label/feature and label/feature index
+
+    It is an essentially a code book for labels or features
+    This class makes it convenient for us to use numpy.array
+    instead of dictionary because it allows us to use index instead of
+    label string. The implemention of classifiers uses label index space
+    instead of label string space.
+    """
+    def __init__(self):
+        self._index_to_label = {}
+        self._label_to_index = {}
+        self.num_labels = 0
+
+    def indexes(self):
+        return self._index_to_label.keys()
+        
+    def labels(self):
+        return self._label_to_index.keys()
+        
+    def size(self):
+        return self.num_labels
+    
+    def has_label(self, label):
+        return label in self._label_to_index
+    
+    def get_label(self, index):
+        """Get label from index"""
+        if index >= self.num_labels:
+            raise KeyError("There are %d labels but the index is %d" % (self.num_labels, index))
+        return self._index_to_label[index]
+
+    def get_index(self, label):
+        """Get index from label"""
+        return self._label_to_index[label] if label in self._label_to_index else None
+        
+    def get_default_index(self,label):
+        """get index for label, if label is not in the alphabet, we add it"""
+        if label in self._label_to_index:
+            return self._label_to_index[label]
+        else:
+            self.add(label)
+            return self._label_to_index[label]
+    
+    def add(self,label):
+        """Add an index for the label if it's a new label"""
+        if label not in self._label_to_index:
+            self._label_to_index[label] = self.num_labels
+            self._index_to_label[self.num_labels] = label
+            self.num_labels += 1
+
+    def json_dumps(self):
+        return json.dumps(self.to_dict())
+
+    @classmethod
+    def json_loads(cls, json_string):
+        json_dict = json.loads(json_string)
+        return Alphabet.from_dict(json_dict)
+
+    def to_dict(self,index_to_label=False):
+        if not index_to_label:
+            new_table = dict([(str(key),value) for key,value in self._label_to_index.items()])
+        else:
+            new_table = dict([(key,str(value)) for key,value in self._index_to_label.items()])
+        return new_table
+
+
+    @classmethod
+    def from_dict(cls, dictionary, index_to_label=False):
+        """
+        Create an Alphabet from dictionary
+        """
+        alphabet = cls()
+        if not index_to_label:
+            alphabet._label_to_index = dictionary
+            #dict([(eval(key),value) if key[0] =='(' else (key,value) for key,value in alphabet_dictionary['_label_to_index'].items()])
+            alphabet._index_to_label = {}
+            for label, index in alphabet._label_to_index.items():
+                alphabet._index_to_label[index] = label
+        else:
+            alphabet._index_to_label = dictionary
+            alphabet._label_to_index = {}
+            for index, label in alphabet._index_to_label.items():
+                alphabet._label_to_index[label] = index
+        # making sure that the dimension agrees
+        assert(len(alphabet._index_to_label) == len(alphabet._label_to_index))
+        alphabet.num_labels = len(alphabet._index_to_label)
+        return alphabet
+
+    def __len__(self):
+        return self.size()
+    
+    def __eq__(self, other):
+        return self._index_to_label == other._index_to_label and \
+            self._label_to_index == other._label_to_index and \
+            self.num_labels == other.num_labels

@@ -24,26 +24,28 @@ class Node():
     #node_id = 0     #static counter, unique for each node
     #mapping_table = {}  # old new index mapping table
 
-    def __init__(self, trace, node_label, firsthit, leaf, depth):
+    def __init__(self, parent, trace, node_label, firsthit, leaf, depth, seqID):
         """
         initialize a node in the graph
         here a node keeps record of trace i.e. from where the node is reached (the edge label)
         so nodes with same other attributes may have different trace
         """
+        self.parent = parent
         self.trace = trace
         self.node_label = node_label
         self.firsthit = firsthit
         self.leaf = leaf
         self.depth = depth
         self.children = []
+        self.seqID = seqID
         #Node.node_id += 1
         #self.node_id = node_id        
         
     def __str__(self):
-        return str((self.trace, self.node_label, self.depth))
+        return str((self.trace, self.node_label, self.depth, self.seqID))
         
     def __repr__(self):
-        return str((self.trace, self.node_label, self.depth))
+        return str((self.trace, self.node_label, self.depth, self.seqID))
 
 class AMR(defaultdict):
     """
@@ -63,6 +65,8 @@ class AMR(defaultdict):
         self.node_to_concepts = {}
         self.align_to_sentence = None
 
+        self.reentrance_triples = []
+
     @classmethod
     def parse_string(cls,amr_string,RENAME_NODE=False):
         """
@@ -78,7 +82,7 @@ class AMR(defaultdict):
             return re.compile(regexstr)
 
         def rename_node(parentnodelabel,parentconcept):
-            if not isinstance(parentnodelabel,(Quantity,Polarity,StrLiteral)):                                       
+            if not isinstance(parentnodelabel,(Quantity,Polarity,Interrogative,StrLiteral)):                                       
                 # graph node rebuild
                 if parentconcept is not None:
                     amr.node_to_concepts[node_idx] = parentconcept
@@ -96,8 +100,9 @@ class AMR(defaultdict):
 
 
         PNODE = 1
-        CNODE = 2
+        CNODE = 2        
         EDGE = 3
+        RCNODE = 4
         
         amr = cls()
         stack = []
@@ -113,6 +118,7 @@ class AMR(defaultdict):
             ("EDGELABEL",":[^\s()]+"),
             ("STRLITERAL",u'"[^"]+"|\u201c[^\u201d]+\u201d'),
             ("LITERAL","'[^\s(),]+"),
+            ("INTERROGATIVE","\sinterrogative(?=[\s\)])"),
             ("QUANTITY","[0-9][0-9Ee^+\-\.,:]*"),
             ("IDENTIFIER","[^\s()]+"), #no blank within characters
             ("POLARITY","\s\-(?=[\s\)])")
@@ -120,6 +126,7 @@ class AMR(defaultdict):
         
         token_re = make_compiled_regex(lex_rules)
         #lexer = Lexer(lex_rules)
+        #amr.reentrance_triples = []
 
         for match in token_re.finditer(amr_string):
             token = match.group()
@@ -212,14 +219,14 @@ class AMR(defaultdict):
                 elif type == "STRLITERAL":
                     stack.append((CNODE,StrLiteral(token[1:-1]),None))
                     state = 6
-                elif type == "LITERAL":
-                    stack.append((CNODE,token[1:],None))
+                elif type == "INTERROGATIVE":
+                    stack.append((CNODE,Interrogative(token[1:]),None))
                     state = 6
                 elif type == "POLARITY":
                     stack.append((CNODE,Polarity(token.strip()),None))
                     state = 6
                 elif type == "IDENTIFIER":
-                    stack.append((CNODE,token,None))
+                    stack.append((RCNODE,token,None))
                     state = 6
                 elif type == "EDGELABEL": #Unary edge
                     stack.append((CNODE,None,None)) 
@@ -265,7 +272,7 @@ class AMR(defaultdict):
                     for edgelabel,children in reversed(edges):
                         hypertarget = []
                         for node, concept in children:
-                            if node is not None and not isinstance(node,(Quantity,Polarity,StrLiteral)) and not node in amr.node_to_concepts:
+                            if node is not None and not isinstance(node,(Quantity,Polarity,Interrogative,StrLiteral)) and not node in amr.node_to_concepts:
                                 if RENAME_NODE:
                                     rename_node(node,concept)
                                 else:
@@ -287,16 +294,21 @@ class AMR(defaultdict):
                 if type == "RPAR":
                     
                     edges = []
+                    reedges = []
                     while stack[-1][0] != PNODE:
                         children = []
+                        reentrances = []
                         #one edge may have multiple children/tail nodes
-                        while stack[-1][0] == CNODE:
-                            forgetme, childnodelabel, childconcept = stack.pop()
+                        while stack[-1][0] == CNODE or stack[-1][0] == RCNODE:
+                            CTYPE, childnodelabel, childconcept = stack.pop()
+                            if CTYPE == RCNODE:
+                                reentrances.append((childnodelabel,childconcept))
                             children.append((childnodelabel,childconcept))
                         
                         assert stack[-1][0] == EDGE
                         forgetme, edgelabel = stack.pop()
                         edges.append((edgelabel,children))
+                        reedges.append((edgelabel,reentrances))
                     
                     forgetme,parentnodelabel,parentconcept = stack.pop()
                     #print "PNODE",state,parentnodelabel,parentconcept
@@ -321,7 +333,7 @@ class AMR(defaultdict):
                     for edgelabel,children in reversed(edges):
                         hypertarget = []
                         for node, concept in children:
-                            if node is not None and not isinstance(node,(Quantity,Polarity,StrLiteral)) and not node in amr.node_to_concepts:
+                            if node is not None and not isinstance(node,(Quantity,Polarity,Interrogative,StrLiteral)) and not node in amr.node_to_concepts:
                                 if RENAME_NODE:
                                     rename_node(node,concept)
                                 else:
@@ -331,6 +343,12 @@ class AMR(defaultdict):
                         hyperchild = tuple(hypertarget)
                         amr._add_triple(parentnodelabel,edgelabel,hyperchild)
                     
+                    for edgelabel,reentrance in reedges:
+                        hreent = []
+                        for node,concept in reentrance:
+                            hreent.append(node)
+                        amr._add_reentrance(parentnodelabel,edgelabel,hreent)
+
                     if stack: #we have done with current level
                         state = 6
                         stack.append((CNODE, parentnodelabel, parentconcept))
@@ -355,6 +373,44 @@ class AMR(defaultdict):
         if state != 0 and stack: 
             raise ParserError, "mismatched parenthesis"
         return amr
+        
+    def get_variable(self,posID):
+        '''return variable given postition ID'''
+        reent_var = None
+        seq = self.dfs()[0]
+        for node in seq:
+            if node.seqID == posID:
+                return node.node_label
+        return None
+        '''
+        posn_queue = posID.split('.')
+        var_list = self.roots
+        past_pos_id = []
+        while posn_queue:
+            posn = int(posn_queue.pop(0))
+            past_pos_id.append(posn)            
+            print var_list,past_pos_id,posn,visited_var
+            variable = var_list[posn]
+            var_list = []
+            vars = [v[0] for v in self[variable].values()]
+            i = 0
+            while i < len(vars):
+                k = vars[i]
+                if k not in visited_var:
+                    var_list.append(k)
+                elif isinstance(k,(StrLiteral,Quantity)):
+                    var_list.append(k)
+                else:
+                    if visited_var[k] == '.'.join(str(j) for j in past_pos_id+[i]):
+                        var_list.append(k)            
+                    else:
+                        vars.pop(i)
+                        i -= 1
+                
+                i += 1
+
+        '''
+        return variable
 
     def get_ref_graph(self,alignment):
         """return the gold dependency graph based on amr graph"""
@@ -387,6 +443,12 @@ class AMR(defaultdict):
                 arc_set.add((h,d[0]))
         return arc_set
     '''
+
+
+
+    def _add_reentrance(self,parent,relation,reentrance):
+        if reentrance:
+            self.reentrance_triples.append((parent,relation,reentrance[0]))
 
     def _add_triple(self, parent, relation, child, warn=sys.stderr):
         """                                                                                         
@@ -430,26 +492,32 @@ class AMR(defaultdict):
         sequence = []
         nid = 0
 
-        for r in self.roots:
-            queue = deque([((r,),None,0)]) # node, incoming edge and depth
+        for i,r in enumerate(self.roots):
+            seqID = str(i)
+            queue = deque([((r,),None, 0, seqID)]) # node, incoming edge and depth
             amr_triples.append(('root','ROOT',r))
             while queue:
-                next,rel,depth = queue.popleft()
+                next,rel,depth,seqID = queue.popleft()
                 for n in next:
-                    firsthit = not n in visited_nodes
+                    firsthit = (parent,rel,n) not in self.reentrance_triples
                     leaf = False if self[n] else True
                     
-                    node = Node(rel,n,firsthit,leaf,depth)
+                    node = Node(rel,n,firsthit,leaf,depth,seqID)
                     #nid += 1
                     sequence.append(node)
-                    if n in visited_nodes:
+                    if n in visited_nodes or (parent,rel,n) in self.reentrance_triples:
                         continue
                     visited_nodes.add(n)
-                    for rel,child in self[n].items():
+                    p = len([child for rel,child in self[n].items() if (n,rel,child[0]) not in self.reentrance_triples]) - 1
+                    for rel,child in reversed(self[n].items()):
                         if not (rel,n,child[0]) in amr_triples:
-                            if not child in visited_nodes:
-                                queue.append((child,rel,depth+1))
-                            amr_triples.append((rel,n,child[0]))                        
+                            if (n,rel,child[0]) not in self.reentrance_triples:
+                                queue.append((child,rel,depth+1,seqID+'.'+str(p)))
+                                p -= 1
+                            else:
+                                queue.append((child,rel,depth+1,None))
+                            amr_triples.append((rel,n,child[0]))
+
 
         return (sequence,amr_triples)
 
@@ -457,7 +525,7 @@ class AMR(defaultdict):
         result = ''
         amr_triples = self.bfs()[1]
         for rel,parent,child in amr_triples:
-            if not isinstance(child,(Quantity,Polarity,StrLiteral)):
+            if not isinstance(child,(Quantity,Polarity,Interrogative,StrLiteral)):
                 result += "%s(%s,%s)\n"%(rel,self.node_to_concepts[parent],self.node_to_concepts[child])
             else:
                 result += "%s(%s,%s)\n"%(rel,self.node_to_concepts[parent],child)
@@ -475,38 +543,53 @@ class AMR(defaultdict):
         visited_edges = []
         sequence = []
 
-        for r in self.roots:
-
-            stack = [((r,),None,0)] # record the node, incoming edge and depth
+        for i,r in enumerate(self.roots):
+            seqID = str(i)
+            stack = [((r,),None,None,0,seqID)] # record the node, incoming edge, parent, depth and unique identifier
             
             #all_nodes = []
             while stack:
-                next,rel,depth = stack.pop()
+                next,rel,parent,depth,seqID = stack.pop()
                 for n in next:
-                    firsthit = not n in visited_nodes
+                    if self.reentrance_triples:
+                        firsthit = (parent,rel,n) not in self.reentrance_triples
+                    else:
+                        firsthit = n not in visited_nodes
                     leaf = False if self[n] else True
 
-                    node = Node(rel, n, firsthit, leaf, depth)
+                    node = Node(parent, rel, n, firsthit, leaf, depth, seqID)
                     
                     #print self.node_to_concepts
                     sequence.append(node)
                     
                     # same StrLiteral/Quantity/Polarity should not be revisited
-                    if n in visited_nodes:
-                        continue
+                    if self.reentrance_triples: # for being the same with the amr string readed in
+                        if n in visited_nodes or (parent,rel,n) in self.reentrance_triples:
+                            continue
+                    else:
+                        if n in visited_nodes:
+                            continue
 
                     visited_nodes.add(n)
+                    p = len([child for rel,child in self[n].items() if (n,rel,child[0]) not in self.reentrance_triples]) - 1
                     for rel, child in reversed(self[n].items()):
                         #print rel,child
                         if not (rel, n, child[0]) in visited_edges:
-                            if not child in visited_nodes:
-                                stack.append((child,rel,depth+1))
+                            #if child[0] not in visited_nodes or isinstance(child[0],(StrLiteral,Quantity)):
                             visited_edges.append((rel,n,child[0]))
-            #Node.node_id = 0
-            #Node.mapping_table = {}
+                            if (n,rel,child[0]) not in self.reentrance_triples:
+                                stack.append((child,rel,n,depth+1,seqID+'.'+str(p)))
+                                p -= 1
+                            else:                                
+                                stack.append((child,rel,n,depth+1,None))
+                        elif isinstance(child[0],(StrLiteral,Quantity)):
+                            stack.append((child,rel,n,depth+1,seqID+'.'+str(p)))
+                            p -= 1
+                        else:
+                            pass
+                            
 
-        
-        return (sequence,visited_edges)
+            return (sequence, visited_edges)
     
     def replace_node(self, h_idx, idx):
         """for coreference, replace all occurrence of node idx to h_idx"""
@@ -624,8 +707,14 @@ class AMR(defaultdict):
                             
         if dep_rec != 0:
             amr_string += "%s"%((dep_rec)*')')
+        else:
+            amr_string += ')'
 
         return amr_string
+
+    def __reduce__(self):
+        t = defaultdict.__reduce__(self)
+        return (t[0], ()) + (self.__dict__,) + t[3:]
 
 if __name__ == "__main__":
 
