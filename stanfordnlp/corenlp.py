@@ -292,7 +292,7 @@ class StanfordCoreNLP(object):
         """
         
         instances = []
-        prp_filename = sent_filename.rsplit('_',1)[0]+'_prp.txt' # preprocessing file
+        prp_filename = sent_filename.rsplit('.',1)[0]+'.prp' # preprocessing file
         if os.path.exists(prp_filename):
             print 'Read token,lemma,name entity file %s...' % (prp_filename)
             prp_result = open(prp_filename,'r').read()
@@ -318,7 +318,7 @@ class StanfordCoreNLP(object):
             output_prp.close()
         
         if seq_depparsing:
-            dep_filename = sent_filename.rsplit('_',1)[0]+'_dep.txt'
+            dep_filename = sent_filename.rsplit('.',1)[0]+'.dep'
             if os.path.exists(dep_filename):
                 print 'Read dependency file %s...' % (dep_filename)
                 dep_result = open(dep_filename,'r').read()

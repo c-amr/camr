@@ -1,0 +1,62 @@
+root	:NONE	---
+dep	:mod	???
+
+aux	:NONE	---
+auxpass	:NONE	---
+cop	:domain	---
+
+arg	:ARG0	???
+agent	:ARG0	---
+comp	:ARG1	???
+acomp	:ARG1	---
+ccomp	:ARG1	???
+xcomp	:ARG1	---
+obj	:ARG1	???
+dobj	:ARG1	---
+iobj	:ARG2	---
+pobj	:NONE	---
+
+subj	:ARG0	---
+nsubj	:ARG0	---
+nsubjpass	:ARG1	---
+csubj	:ARG0	---
+csubjpass	:ARG1	---
+
+cc	:NONE	---
+conj	:NONE	---
+expl	:NONE	---
+
+mod	:mod	???
+amod	:mod	---
+appos	:name	---
+advcl	:mod	???
+det	:NONE	---
+predet	:NONE	---
+preconj	:NONE	---
+vmod	:mod	---
+mwe	:NONE	---
+mark	:NONE	---
+advmod	:mod	---
+neg	:polarity-	---
+rcmod	:mod	???	
+quantmod	:time	---
+nn	:NONE	---
+npadvmod	:mod	---
+tmod	:mod	???
+num	:quant	---
+number	:quant	---
+prep	:mod	---
+poss	:poss	---
+possessive	:NONE	---
+prt	:NONE	---
+
+parataxis	:NONE	---
+punct	:NONE	---
+ref	:NONE	---
+sdep	:ARG0	??? 
+xsubj	:ARG0	---
+
+discourse	:NONE	---
+goeswith	:NONE	---
+pcomp	:NONE	???
+prepc	:mod	---

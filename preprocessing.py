@@ -54,7 +54,7 @@ def preprocess(amr_file,START_SNLP=True):
     aligned_amr_file = amr_file + '.aligned'
     comments,amr_strings = readAMR(aligned_amr_file)
     sentences = [c['tok'] for c in comments]
-    tmp_sentence_file = amr_file+'_sent.txt'
+    tmp_sentence_file = amr_file+'.sent'
     _write_sentences(tmp_sentence_file,sentences)
 
     print >> log, "pos, ner and dependency..."

@@ -105,7 +105,7 @@ def main():
     arg_parser.add_argument('-i','--input_file',help='the input: preprocessed data instances file for aligner or training')
     arg_parser.add_argument('-d','--dev',help='development file')
     arg_parser.add_argument('-as','--actionset',choices=['basic'],default='basic',help='choose different action set')
-    arg_parser.add_argument('-m','--mode',choices=['preprocess','test_gold_graph','align','userGuide','oracleGuide','train','parse'],help="preprocess:generate pos tag, dependency tree, ner" "align:do alignment between AMR graph and sentence string")
+    arg_parser.add_argument('-m','--mode',choices=['preprocess','test_gold_graph','align','userGuide','oracleGuide','train','parse'],help="preprocess:generate pos tag, dependency tree, ner\n" "align:do alignment between AMR graph and sentence")
     arg_parser.add_argument('--model',help='specify the model file')
     arg_parser.add_argument('--feat',help='feature template file')
     arg_parser.add_argument('-iter','--iterations',type=int,help='training iterations')
@@ -270,6 +270,8 @@ def main():
         #pickle.dump(results,open('data/gold_edge_graph.pkl','wb'),pickle.HIGHEST_PROTOCOL)
         #plt.hist(results)
         #plt.savefig('result.png')
+    else:
+        arg_parser.print_help()
     
 if __name__ == "__main__":
     main()
