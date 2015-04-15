@@ -256,7 +256,7 @@ class StanfordCoreNLP(object):
        
         # if CoreNLP libraries are in a different directory,
         # change the corenlp_path variable to point to them
-        corenlp_path = os.path.relpath(__file__).split('/')[0]+"/stanford-parser/"
+        corenlp_path = os.path.relpath(__file__).split('/')[0]+"/stanford-parser-full-2014-01-04/"
         
         java_path = "java"
         classname = "edu.stanford.nlp.parser.lexparser.LexicalizedParser"

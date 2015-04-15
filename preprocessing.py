@@ -43,6 +43,37 @@ def _write_sentences(file_path,sentences):
         output.write(sent+'\n')
     output.close()
 
+
+def _write_tok_amr(file_path,amr_file,instances):
+    output_tok = open(file_path,'w')
+    origin_comment_string = ''
+    origin_amr_string = ''
+    comment_list = []
+    amr_list = []
+    for line in open(amr_file,'r').readlines():
+        if line.startswith('#'):
+            origin_comment_string += line 
+        elif not line.strip():
+            if origin_amr_string and origin_comment_string:
+                comment_list.append(origin_comment_string)
+                amr_list.append(origin_amr_string)
+
+                origin_amr_string = ''
+                origin_comment_string = ''
+        else:
+            origin_amr_string += line
+    if origin_amr_string and origin_comment_string:
+        comment_list.append(origin_comment_string)
+        amr_list.append(origin_amr_string)
+
+    for i in xrange(len(instances)):
+        output_tok.write(comment_list[i])
+        output_tok.write("# ::tok %s\n" % (' '.join(instances[i].get_tokenized_sent())))
+        output_tok.write(amr_list[i])
+        output_tok.write('\n')
+
+    output_tok.close()
+
 def _add_amr(instances,amr_strings):
     assert len(instances) == len(amr_strings)
     
@@ -52,6 +83,10 @@ def _add_amr(instances,amr_strings):
 def preprocess(amr_file,START_SNLP=True):
     '''nasty function'''
     aligned_amr_file = amr_file + '.aligned'
+    if os.path.exists(aligned_amr_file):
+        comments,amr_strings = readAMR(aligned_amr_file)
+    else:
+        comments,amr_strings = readAMR(amr_file)
     comments,amr_strings = readAMR(aligned_amr_file)
     sentences = [c['tok'] for c in comments]
     tmp_sentence_file = amr_file+'.sent'
@@ -62,6 +97,10 @@ def preprocess(amr_file,START_SNLP=True):
     if START_SNLP: proc.setup()
     instances = proc.parse(tmp_sentence_file)
 
+    tok_amr_filename = amr_file + '.tok'
+    if not os.path.exists(tok_amr_filename):
+        _write_tok_amr(tok_amr_filename,amr_file,instances)
+    
     SpanGraph.graphID = 0
     for i in range(len(instances)):
 

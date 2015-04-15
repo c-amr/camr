@@ -122,7 +122,7 @@ def main():
     # using corenlp to preprocess the sentences 
     if args.mode == 'preprocess':
         instances = preprocess(amr_file)
-        print >> log, "Done preprocessing!"
+        print >> experiment_log, "Done preprocessing!"
     # preprocess the JAMR aligned amr
     elif args.mode == 'test_gold_graph':     
         instances = preprocess(amr_file,False)

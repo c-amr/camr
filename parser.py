@@ -13,9 +13,9 @@ import sys,copy,time,datetime
 import numpy as np
 from perceptron import Perceptron
 import cPickle as pickle
-import matplotlib
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt
+#import matplotlib
+#matplotlib.use('Agg')
+#import matplotlib.pyplot as plt
 
 DRAW_GRAPH = False
 WRITE_FAKE_AMR = False
