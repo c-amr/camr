@@ -11,7 +11,7 @@ from common.util import Alphabet,ETag,ConstTag
 import importlib
 from collections import defaultdict
  
-_FEATURE_TEMPLATES_FILE = './feature/basic_feats.templates'
+_FEATURE_TEMPLATES_FILE = './feature/basic_feats_joint.templates'
 
 class Model():
     """weights and templates"""
@@ -157,7 +157,7 @@ class Model():
                 pass
             else:
                 elements = line.split()
-                elements.extend(['tx'])
+                #elements.extend(['tx'])
                 template = "'%s=%s' %% (%s)"%('&'.join(elements),'%s_'*len(elements),','.join(elements))
                 self._feature_templates_list.append((template,elements))
 

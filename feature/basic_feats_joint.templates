@@ -2,50 +2,66 @@
 # TODO: FEATURE CONTEXT WINDOW
 
 # UNIGRAM
-s0_ne	
-s0_w		a0_w	
-s0_lemma	a0_lemma
-s0_t		a0_t
-s0_dl		a0_dl
-s0_len
-
+s0_ne	tx		
+s0_w	tx	
+s0_lemma	tx	
+s0_t		tx
+s0_dl		tx
+s0_len		tx
 
 b0_ne
-b0_w		a0_w
-b0_lemma	a0_lemma
-b0_t		a0_t
-b0_dl		a0_dl
+b0_w
+b0_lemma
+b0_t	
+b0_dl
 b0_len
+b0_reph
 
 # parent to attach
-#a0_ne
-#a0_w
-#a0_lemma
-#a0_t	
-#a0_dl
+a0_ne
+a0_w
+a0_lemma
+a0_t	
+a0_dl
 
 # first parent
-s0_p1_ne
-s0_p1_w
-s0_p1_lemma
-s0_p1_t	
-s0_p1_dl
+s0_p1_ne        
+s0_p1_w		
+s0_p1_lemma	
+s0_p1_t		
+s0_p1_dl	
 
 # path
-b0_pathp
-a0_pathp
-
+b0_pathpwd	b0_lemma	s0_lemma
+b0_apathpwd	a0_lemma	b0_lemma
 
 # make conjunction swap specific
 b0_lemma	b0_rsb_dl
 # prevent 'and' swap too greedy
 b0_lemma	b0_nswp
 
+
 # sentence distance between s0 and b0
 dist1
+dist1	b0_pathp
+dist2
+dist2	b0_apathp
+
+# left label set
+# s0_lsl
 
 # BIGRAM
-# s0_lemma b0_lemma
+s0_lemma   b0_t
+s0_lemma   b0_dl
+s0_t	   b0_lemma
+s0_dl	   b0_lemma
+s0_ne	   b0_ne
+
+#a0_lemma   b0_t
+#a0_lemma   b0_dl
+a0_t	   b0_lemma
+a0_dl	   b0_lemma
+a0_ne	   b0_ne
 
 # BIGRAM
 # s0_w 	s0_t	b0_w	b0_t

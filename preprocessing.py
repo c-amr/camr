@@ -82,15 +82,16 @@ def _add_amr(instances,amr_strings):
 
 def preprocess(amr_file,START_SNLP=True):
     '''nasty function'''
-    aligned_amr_file = amr_file + '.aligned'
+    aligned_amr_file = amr_file + '.tok.aligned'
     if os.path.exists(aligned_amr_file):
         comments,amr_strings = readAMR(aligned_amr_file)
     else:
         comments,amr_strings = readAMR(amr_file)
-    comments,amr_strings = readAMR(aligned_amr_file)
+    #comments,amr_strings = readAMR(aligned_amr_file)
     sentences = [c['tok'] for c in comments]
     tmp_sentence_file = amr_file+'.sent'
-    _write_sentences(tmp_sentence_file,sentences)
+    if not os.path.exists(tmp_sentence_file):
+        _write_sentences(tmp_sentence_file,sentences)
 
     print >> log, "pos, ner and dependency..."
     proc = StanfordCoreNLP()

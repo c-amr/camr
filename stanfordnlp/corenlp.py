@@ -26,6 +26,8 @@ from unidecode import unidecode
 from nltk.tree import Tree
 import re
 from data import Data
+import constants
+
 
 VERBOSE = True
 STATE_START, STATE_TEXT, STATE_WORDS, STATE_TREE, STATE_DEPENDENCY, STATE_COREFERENCE = 0, 1, 2, 3, 4, 5
@@ -90,7 +92,7 @@ def parse_parser_results(text):
             if len(line) == 0:
                 state = STATE_DEPENDENCY
                 parsed = " ".join(parsed)
-                data.addTree(Tree.parse(parsed))
+                #data.addTree(Tree.parse(parsed))
             else:
                 parsed.append(line)
         
@@ -98,6 +100,8 @@ def parse_parser_results(text):
             if len(line) == 0:
                 state = STATE_COREFERENCE
             else:
+                pass
+                '''
                 split_entry = re.split("\(|, ", line[:-1])
                 if len(split_entry) == 3:
                     rel, l_lemma, r_lemma = split_entry
@@ -107,7 +111,7 @@ def parse_parser_results(text):
                     r_lemma, r_index = m.group('lemma'), m.group('index')
 
                     data.addDependency( rel, l_lemma, r_lemma, l_index, r_index)
-        
+                '''
         elif state == STATE_COREFERENCE:
             if "Coreference set" in line:
 ##                if 'coref' not in results:
@@ -123,22 +127,64 @@ def parse_parser_results(text):
     return data
 
 def add_sep_dependency(instances,result):
-    i = 0
-    for line in result.split('\n'):
-        if line.strip():
-            split_entry = re.split("\(|, ", line[:-1])
+    if constants.FLAG_DEPPARSER == 'stanford':
+        i = 0
+        for line in result.split('\n'):
+            if line.strip():
+                split_entry = re.split("\(|, ", line[:-1])
 
-            if len(split_entry) == 3:
-                rel, l_lemma, r_lemma = split_entry
-                m = re.match(r'(?P<lemma>.+)-(?P<index>[^-]+)', l_lemma)
-                l_lemma, l_index = m.group('lemma'), m.group('index')
-                m = re.match(r'(?P<lemma>.+)-(?P<index>[^-]+)', r_lemma)
-                r_lemma, r_index = m.group('lemma'), m.group('index')
+                if len(split_entry) == 3:
+                    rel, l_lemma, r_lemma = split_entry
+                    m = re.match(r'(?P<lemma>.+)-(?P<index>[^-]+)', l_lemma)
+                    l_lemma, l_index = m.group('lemma'), m.group('index')
+                    m = re.match(r'(?P<lemma>.+)-(?P<index>[^-]+)', r_lemma)
+                    r_lemma, r_index = m.group('lemma'), m.group('index')
+
+                    instances[i].addDependency( rel, l_index, r_index )
+
+            else:
+                i += 1
+
+    elif constants.FLAG_DEPPARSER in ["turbo","malt"]:
+        i = 0
+        for line in result.split('\n'):
+            if line.strip():
+                line = line.split()
+                instances[i].addDependency( line[7], line[6], line[0])
+            else:
+                i += 1
+
+    elif constants.FLAG_DEPPARSER == "mate":
+        i = 0
+        for line in result.split('\n'):
+            if line.strip():
+                line = line.split()
+                instances[i].addDependency( line[11], line[9], line[0])
+            else:
+                i += 1
+    elif constants.FLAG_DEPPARSER == 'stdconv+charniak':
+        i = 0
+        for line in result.split('\n'):
+            if line.strip():
+                split_entry = re.split("\(|, ", line[:-1])
                 
-                instances[i].addDependency( rel, l_lemma, r_lemma, l_index, r_index )
+                if len(split_entry) == 3:
+                    rel, l_lemma, r_lemma = split_entry
+                    m = re.match(r'(?P<lemma>.+)-(?P<index>[^-]+)', l_lemma)
+                    l_lemma, l_index = m.group('lemma'), m.group('index')
+                    m = re.match(r'(?P<lemma>[^\^]+)(\^(?P<trace>[^-]+))?-(?P<index>[^-]+)', r_lemma)
+                    r_lemma,r_trace, r_index = m.group('lemma'), m.group('trace'), m.group('index')
+
+                    if r_index != 'null':
+                        #print >> sys.stderr, line                        
+                        instances[i].addDependency( rel, l_index, r_index )
+                    #if r_trace is not None:
+                    #    instances[i].addTrace( rel, l_index, r_trace )                      
                 
-        else:
-            i += 1
+            else:
+                i += 1
+    else:
+        raise ValueError("Unknown dependency format!")
 
 class StanfordCoreNLP(object):
     """
@@ -283,7 +329,7 @@ class StanfordCoreNLP(object):
         
         return incoming
 
-    def parse(self, sent_filename, seq_depparsing=True):
+    def parse(self, sent_filename):
         """ 
         This function takes a text string, sends it to the Stanford parser,
         reads in the result, parses the results and returns a list
@@ -317,8 +363,9 @@ class StanfordCoreNLP(object):
                 instances.append(data)
             output_prp.close()
         
-        if seq_depparsing:
-            dep_filename = sent_filename.rsplit('.',1)[0]+'.dep'
+        #if seq_depparsing:
+        if constants.FLAG_DEPPARSER == 'stanford':
+            dep_filename = sent_filename +'.tok.stanford.dep'
             if os.path.exists(dep_filename):
                 print 'Read dependency file %s...' % (dep_filename)
                 dep_result = open(dep_filename,'r').read()
@@ -328,9 +375,26 @@ class StanfordCoreNLP(object):
                 output_dep = open(dep_filename,'w')
                 output_dep.write(dep_result)
                 output_dep.close()
-
             add_sep_dependency(instances,dep_result)
-            
+        else:
+            dep_filename = None
+            if constants.FLAG_DEPPARSER == 'stdconv+charniak':
+                dep_filename = sent_filename+'.tok.charniak.parse.dep'
+            elif constants.FLAG_DEPPARSER == 'turbo':
+                dep_filename = sent_filename +'.tok.turbo.dep'
+            elif constants.FLAG_DEPPARSER == 'mate':
+                dep_filename = sent_filename + '.tok.mate.dep'
+            elif constants.FLAG_DEPPARSER == 'malt':
+                dep_filename =sent_filename + '.tok.malt.dep'
+            else:
+                raise ValueError('Invalid Dependency Format!')                
+            if os.path.exists(dep_filename):
+                print 'Read dependency file %s...' % (dep_filename)
+                dep_result = open(dep_filename,'r').read()
+            else:
+                raise FileNotFoundError('charniak parse dependency file %s not found'%(dep_filename))
+            add_sep_dependency(instances,dep_result)
+
         return instances
 
 

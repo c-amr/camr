@@ -51,7 +51,7 @@ class Data():
     def addCoref( self, coref_set):
         self.coreference = coref_set
 
-    def addDependency( self, rel, l_token, r_token, l_index, r_index):
+    def addDependency( self, rel, l_index, r_index):
         '''CoNLL dependency format'''
         assert int(r_index) == self.tokens[int(r_index)]['id'] and int(l_index) == self.tokens[int(l_index)]['id']
         self.tokens[int(r_index)]['head'] = int(l_index)

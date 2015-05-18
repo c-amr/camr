@@ -704,7 +704,6 @@ class SpanGraph(object):
         if c > 0:
             left_sp = self.nodes[children[c-1]]
             candidate_parents.add(children[c-1])
-            visited.add(children[c-1])
             while left_sp.children:
                 ls_r_child = sorted(left_sp.children)[-1]
                 #if ls_r_child in candidate_parents: break
@@ -717,7 +716,6 @@ class SpanGraph(object):
         if c < len(children) - 1:
             right_sp = self.nodes[children[c+1]]
             candidate_parents.add(children[c+1])
-            visited.add(children[c+1])
             while right_sp.children:
                 rs_l_child = sorted(right_sp.children)[0]
                 #if rs_l_child in candidate_parents: break

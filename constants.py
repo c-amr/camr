@@ -1,6 +1,8 @@
 # all the constants 
 import numpy as np
 
+# flags
+FLAG_DEPPARSER='stanford'
 
 EMPTY = None
 NOT_ASSIGNED = None

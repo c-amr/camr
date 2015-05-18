@@ -118,10 +118,10 @@ class AMR(defaultdict):
             ("EDGELABEL",":[^\s()]+"),
             ("STRLITERAL",u'"[^"]+"|\u201c[^\u201d]+\u201d'),
             ("LITERAL","'[^\s(),]+"),
-            ("INTERROGATIVE","\sinterrogative(?=[\s\)])"),
+            ("INTERROGATIVE","\s(interrogative|imperative|expressive)(?=[\s\)])"),
             ("QUANTITY","[0-9][0-9Ee^+\-\.,:]*"),
             ("IDENTIFIER","[^\s()]+"), #no blank within characters
-            ("POLARITY","\s\-(?=[\s\)])")
+            ("POLARITY","\s(\-|\+)(?=[\s\)])")
         ] 
         
         token_re = make_compiled_regex(lex_rules)
@@ -381,6 +381,13 @@ class AMR(defaultdict):
         for node in seq:
             if node.seqID == posID:
                 return node.node_label
+        return None
+    
+    def get_pid(self,var):
+        seq = self.dfs()[0]
+        for node in seq:
+            if node.node_label == var:
+                return node.seqID
         return None
         '''
         posn_queue = posID.split('.')

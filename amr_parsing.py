@@ -19,8 +19,9 @@ from parser import *
 from model import Model
 import argparse
 from preprocessing import *
-from constants import *
+import constants
 from graphstate import GraphState
+
 #import matplotlib.pyplot as plt
 
 reload(sys)
@@ -106,6 +107,7 @@ def main():
     arg_parser.add_argument('-d','--dev',help='development file')
     arg_parser.add_argument('-as','--actionset',choices=['basic'],default='basic',help='choose different action set')
     arg_parser.add_argument('-m','--mode',choices=['preprocess','test_gold_graph','align','userGuide','oracleGuide','train','parse'],help="preprocess:generate pos tag, dependency tree, ner\n" "align:do alignment between AMR graph and sentence")
+    arg_parser.add_argument('-dp','--depparser',choices=['stanford','turbo','mate','malt','stdconv+charniak'],default='stanford',help='choose the dependency parser')
     arg_parser.add_argument('--model',help='specify the model file')
     arg_parser.add_argument('--feat',help='feature template file')
     arg_parser.add_argument('-iter','--iterations',type=int,help='training iterations')
@@ -117,8 +119,9 @@ def main():
     amr_file = args.amr_file
     instances = None
     train_instance = None
-    
-    
+
+    constants.FLAG_DEPPARSER=args.depparser
+
     # using corenlp to preprocess the sentences 
     if args.mode == 'preprocess':
         instances = preprocess(amr_file)
@@ -231,7 +234,7 @@ def main():
         print "Total Accuracy: %s, Recall: %s, F-1: %s" % (pt,rt,ft)
 
         #amr_parser.record_actions('data/action_set.txt')
-    elif args.mode == 'train': # actual parsing 
+    elif args.mode == 'train': # actual parsing
         train_instances = preprocess(amr_file,False)
         if args.dev: dev_instances = preprocess(args.dev,False)
         feat_template = args.feat if args.feat else None
