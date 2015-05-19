@@ -82,7 +82,7 @@ def _add_amr(instances,amr_strings):
 
 def preprocess(amr_file,START_SNLP=True):
     '''nasty function'''
-    aligned_amr_file = amr_file + '.tok.aligned'
+    aligned_amr_file = amr_file + '.aligned'
     if os.path.exists(aligned_amr_file):
         comments,amr_strings = readAMR(aligned_amr_file)
     else:
