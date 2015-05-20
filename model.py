@@ -50,7 +50,7 @@ class Model():
         
     def setup(self,action_type,instances,feature_templates_file=None):
 
-        self._feats_templates_file = feature_templates_file
+        self._feats_templates_file = feature_templates_file if feature_templates_file else _FEATURE_TEMPLATES_FILE
         self.class_codebook = Alphabet.from_dict(dict((i,k) for i,(k,v) in enumerate(ACTION_TYPE_TABLE[action_type])),True)
         self.feature_codebook = dict([(i,Alphabet()) for i in self.class_codebook._index_to_label.keys()])
         self.read_templates()
