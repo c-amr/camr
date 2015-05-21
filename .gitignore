@@ -63,3 +63,4 @@ smatch*/
 # cache
 *~
 scripts/*~
+wclusters*
