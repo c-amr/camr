@@ -132,127 +132,141 @@ class Parser(object):
         #f = 2*p*r/(p+r)
         print >> self.elog,"Total Accuracy: %s" % (pt)
 
-    def parse_corpus_test(self, instances):
-        Parser.cm = np.zeros(shape=(len(GraphState.action_table),len(GraphState.action_table)))
-        Parser.rtx = []
-        Parser.rty = []
-        Parser.steps = []
-
+    def parse_corpus_test(self, instances, EVAL=False):
         start_time = time.time()
         parsed_amr = []
         span_graph_pairs = []
-        n_correct_labeled_total = .0
-        n_correct_total = .0
-        n_parsed_total = .0
-        n_gold_total = .0
-
-        n_correct_tag_total = .0
-        n_parsed_tag_total = .0
-        brackets = defaultdict(set)
-        results = []
-        n_gold_tag_total = .0
-        #cm_total = np.zeros(shape=(len(GraphState.action_table),len(GraphState.action_table)))
-        #if WRITE_FAKE_AMR: out_fake_amr = open('data/fake_amr_triples.txt','w')
-         
-        for i,inst in enumerate(instances,1):
-            per_start_time = time.time()
-            step,state = self.parse(inst,train=False)
-            per_parse_time = round(time.time()-per_start_time,3)
-            
-            Parser.rtx.append(len(inst.tokens))
-            Parser.rty.append(per_parse_time)
-            Parser.steps.append(step)
-
-            n_correct_labeled_arc,n_correct_arc,n_parsed_arc,n_gold_arc,n_correct_tag,n_parsed_tag,n_gold_tag = state.evaluate()
-
-            p = n_correct_arc/n_parsed_arc if n_parsed_arc else .0
-            r = n_correct_arc/n_gold_arc if n_gold_arc else .0
-            f = 2*p*r/(p+r) if p+r != .0 else .0
-            '''
-            results.append(f)
-
-            if f <= 0.4 and f >= .0:
-                brackets['0-40'].add(inst.sentID)
-            elif f <= 0.6 and f > 0.4:
-                brackets['40-60'].add(inst.sentID)
-            else:
-                brackets['60-100'].add(inst.sentID)
-            '''
-            n_correct_labeled_total += n_correct_labeled_arc
-            n_correct_total += n_correct_arc
-            n_parsed_total += n_parsed_arc
-            n_gold_total += n_gold_arc
-
-            n_correct_tag_total +=  n_correct_tag
-            n_parsed_tag_total +=  n_parsed_tag
-            n_gold_tag_total += n_gold_tag
-
-            p1 = n_correct_arc/n_parsed_arc if n_parsed_arc != .0 else .0
-            r1 = n_correct_arc/n_gold_arc
-            f1 = 2*p1*r1/(p1+r1) if p1+r1 != .0 else .0
-
-            lp1 = n_correct_labeled_arc/n_parsed_arc if n_parsed_arc != .0 else .0
-            lr1 = n_correct_labeled_arc/n_gold_arc
-            lf1 = 2*lp1*lr1/(lp1+lr1) if lp1+lr1 != .0 else .0
-
-            tp1 = n_correct_tag/n_parsed_tag if n_parsed_tag != .0 else .0
-            tr1 = n_correct_tag/n_gold_tag if n_gold_tag != .0 else .0
-
-            score = (p1,r1,f1,lp1,lr1,lf1,tp1,tr1)
-            ##########################
-            #gold edge labeled amr; gold tag labeled amr ;for comparison
-            #garc_graph = state.get_gold_edge_graph()                
-            #parsed_amr.append(GraphState.get_parsed_amr(garc_graph))            
-            #
-            #gtag_graph = state.get_gold_tag_graph()
-            #parsed_amr.append(GraphState.get_parsed_amr(gtag_graph))            
-            
-            #g_graph = state.get_gold_label_graph()
-            #parsed_amr.append(GraphState.get_parsed_amr(g_graph))            
-            ############################
-
-
-            parsed_amr.append(GraphState.get_parsed_amr(state.A))
-            span_graph_pairs.append((state.A,state.gold_graph,score))
-            print >> self.elog, "Done parsing sentence %s" % (state.sentID)
-            
-        print >> self.elog,"Parsing on %s instances takes %s" % (str(i),datetime.timedelta(seconds=round(time.time()-start_time,0)))
-        p = n_correct_total/n_parsed_total if n_parsed_total != .0 else .0
-        r = n_correct_total/n_gold_total
-        f = 2*p*r/(p+r)
-        print >> self.elog,"Unlabeled Precision:%s Recall:%s F1:%s" % (p,r,f)
-
-        lp = n_correct_labeled_total/n_parsed_total
-        lr = n_correct_labeled_total/n_gold_total
-        lf = 2*lp*lr/(lp+lr)
-        print >> self.elog,"Labeled Precision:%s Recall:%s F1:%s" % (lp,lr,lf)
-
-        tp = n_correct_tag_total/n_parsed_tag_total
-        tr = n_correct_tag_total/n_gold_tag_total
-        print >> self.elog,"Tagging Precision:%s Recall:%s" % (tp,tr)
-
         
-        #pickle.dump((Parser.rtx,Parser.rty,Parser.steps),open('draw-graph/rt.pkl','wb'))
-        #plt.plot(Parser.rtx,Parser.rty,'o')
-        #plt.savefig('draw-graph/rt.png')
-        #plt.plot(Parser.rtx,Parser.steps,'o')
-        #plt.xlabel('Sentence length')
-        #plt.ylabel('Actions')
-        #plt.savefig('draw-graph/rt-act.png')
+        if EVAL:
+            Parser.cm = np.zeros(shape=(len(GraphState.action_table),len(GraphState.action_table)))
+            Parser.rtx = []
+            Parser.rty = []
+            Parser.steps = []
 
-        print "Confusion matrix action class:"
-        np.set_printoptions(suppress=True)
-        print np.round(np.divide(Parser.cm,10))
+            n_correct_labeled_total = .0
+            n_correct_total = .0
+            n_parsed_total = .0
+            n_gold_total = .0
+
+            n_correct_tag_total = .0
+            n_parsed_tag_total = .0
+            brackets = defaultdict(set)
+            results = []
+            n_gold_tag_total = .0
+            #cm_total = np.zeros(shape=(len(GraphState.action_table),len(GraphState.action_table)))
+            #if WRITE_FAKE_AMR: out_fake_amr = open('data/fake_amr_triples.txt','w')
+
+            for i,inst in enumerate(instances,1):
+                per_start_time = time.time()
+                step,state = self.parse(inst,train=False)
+                per_parse_time = round(time.time()-per_start_time,3)
+
+                Parser.rtx.append(len(inst.tokens))
+                Parser.rty.append(per_parse_time)
+                Parser.steps.append(step)
+
+                n_correct_labeled_arc,n_correct_arc,n_parsed_arc,n_gold_arc,n_correct_tag,n_parsed_tag,n_gold_tag = state.evaluate()
+
+                p = n_correct_arc/n_parsed_arc if n_parsed_arc else .0
+                r = n_correct_arc/n_gold_arc if n_gold_arc else .0
+                f = 2*p*r/(p+r) if p+r != .0 else .0
+                '''
+                results.append(f)
+
+                if f <= 0.4 and f >= .0:
+                    brackets['0-40'].add(inst.sentID)
+                elif f <= 0.6 and f > 0.4:
+                    brackets['40-60'].add(inst.sentID)
+                else:
+                    brackets['60-100'].add(inst.sentID)
+                '''
+                n_correct_labeled_total += n_correct_labeled_arc
+                n_correct_total += n_correct_arc
+                n_parsed_total += n_parsed_arc
+                n_gold_total += n_gold_arc
+
+                n_correct_tag_total +=  n_correct_tag
+                n_parsed_tag_total +=  n_parsed_tag
+                n_gold_tag_total += n_gold_tag
+
+                p1 = n_correct_arc/n_parsed_arc if n_parsed_arc != .0 else .0
+                r1 = n_correct_arc/n_gold_arc
+                f1 = 2*p1*r1/(p1+r1) if p1+r1 != .0 else .0
+
+                lp1 = n_correct_labeled_arc/n_parsed_arc if n_parsed_arc != .0 else .0
+                lr1 = n_correct_labeled_arc/n_gold_arc
+                lf1 = 2*lp1*lr1/(lp1+lr1) if lp1+lr1 != .0 else .0
+
+                tp1 = n_correct_tag/n_parsed_tag if n_parsed_tag != .0 else .0
+                tr1 = n_correct_tag/n_gold_tag if n_gold_tag != .0 else .0
+
+                score = (p1,r1,f1,lp1,lr1,lf1,tp1,tr1)
+                ##########################
+                #gold edge labeled amr; gold tag labeled amr ;for comparison
+                #garc_graph = state.get_gold_edge_graph()                
+                #parsed_amr.append(GraphState.get_parsed_amr(garc_graph))            
+                #
+                #gtag_graph = state.get_gold_tag_graph()
+                #parsed_amr.append(GraphState.get_parsed_amr(gtag_graph))            
+
+                #g_graph = state.get_gold_label_graph()
+                #parsed_amr.append(GraphState.get_parsed_amr(g_graph))            
+                ############################
+
+
+                parsed_amr.append(GraphState.get_parsed_amr(state.A))
+                span_graph_pairs.append((state.A,state.gold_graph,score))
+                print >> self.elog, "Done parsing sentence %s" % (state.sentID)
+
+            print >> self.elog,"Parsing on %s instances takes %s" % (str(i),datetime.timedelta(seconds=round(time.time()-start_time,0)))
+            p = n_correct_total/n_parsed_total if n_parsed_total != .0 else .0
+            r = n_correct_total/n_gold_total
+            f = 2*p*r/(p+r)
+            print >> self.elog,"Unlabeled Precision:%s Recall:%s F1:%s" % (p,r,f)
+
+            lp = n_correct_labeled_total/n_parsed_total
+            lr = n_correct_labeled_total/n_gold_total
+            lf = 2*lp*lr/(lp+lr)
+            print >> self.elog,"Labeled Precision:%s Recall:%s F1:%s" % (lp,lr,lf)
+
+            tp = n_correct_tag_total/n_parsed_tag_total
+            tr = n_correct_tag_total/n_gold_tag_total
+            print >> self.elog,"Tagging Precision:%s Recall:%s" % (tp,tr)
+
+
+            #pickle.dump((Parser.rtx,Parser.rty,Parser.steps),open('draw-graph/rt.pkl','wb'))
+            #plt.plot(Parser.rtx,Parser.rty,'o')
+            #plt.savefig('draw-graph/rt.png')
+            #plt.plot(Parser.rtx,Parser.steps,'o')
+            #plt.xlabel('Sentence length')
+            #plt.ylabel('Actions')
+            #plt.savefig('draw-graph/rt-act.png')
+
+            print "Confusion matrix action class:"
+            np.set_printoptions(suppress=True)
+            print np.round(np.divide(Parser.cm,10))
+
+
+            ##############################
+            #import random
+            #print random.sample(brackets['0-40'],10)
+            #print random.sample(brackets['40-60'],10)
+            #print random.sample(brackets['60-100'],10)        
+
+            #return results
+        else:
+
+            for i,inst in enumerate(instances,1):
+                per_start_time = time.time()
+                step,state = self.parse(inst,train=False)
+                per_parse_time = round(time.time()-per_start_time,3)
+
+                parsed_amr.append(GraphState.get_parsed_amr(state.A))
+                print >> self.elog, "Done parsing sentence %s" % (state.sentID)
+                
+            print >> self.elog,"Parsing on %s instances takes %s" % (str(i),datetime.timedelta(seconds=round(time.time()-start_time,0)))
+            
         return span_graph_pairs, parsed_amr
-
-        ##############################
-        #import random
-        #print random.sample(brackets['0-40'],10)
-        #print random.sample(brackets['40-60'],10)
-        #print random.sample(brackets['60-100'],10)        
-        
-        #return results
-
     def _parse(self,instance):
         self.perceptron.no_update()
         return (True,Parser.State.init_state(instance,self.verbose))
@@ -334,10 +348,12 @@ class Parser(object):
 
                     best_act_ind, best_label_index = self.get_best_act(scores,actions)#,argset)
                     best_act = actions[best_act_ind]
-                    best_label = Parser.get_index_label(best_act,best_label_index)                    
-                    gold_act, gold_label = Parser.oracle.give_ref_action(state,ref_graph)
+                    best_label = Parser.get_index_label(best_act,best_label_index)
 
-                    self.evaluate_actions(actions[best_act_ind],best_label_index,gold_act,gold_label,ref_graph)
+                    if self.verbose == 1:
+                        gold_act, gold_label = Parser.oracle.give_ref_action(state,ref_graph)
+
+                        self.evaluate_actions(actions[best_act_ind],best_label_index,gold_act,gold_label,ref_graph)
                     
 
                     if self.verbose > 2:

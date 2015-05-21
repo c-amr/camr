@@ -230,32 +230,69 @@ def _add_dependency(instances,result,FORMAT="stanford"):
     else:
         raise ValueError("Unknown dependency format!")
 
-def preprocess(amr_file,START_SNLP=True):
+def preprocess(input_file,START_SNLP=True,INPUT_AMR=True):
     '''nasty function'''
-    aligned_amr_file = amr_file + '.aligned'
-    if os.path.exists(aligned_amr_file):
-        comments,amr_strings = readAMR(aligned_amr_file)
+    tmp_sent_filename = None
+    instances = None
+    tok_sent_filename = None
+    
+    if INPUT_AMR: # the input file is amr annotation
+        
+        amr_file = input_file
+        aligned_amr_file = amr_file + '.aligned'
+        if os.path.exists(aligned_amr_file):
+            comments,amr_strings = readAMR(aligned_amr_file)
+        else:
+            comments,amr_strings = readAMR(amr_file)
+        sentences = [c['snt'] for c in comments] # here should be 'snt'
+        tmp_sent_filename = amr_file+'.sent'
+        if not os.path.exists(tmp_sent_filename): # write sentences into file
+            _write_sentences(tmp_sent_filename,sentences)
+
+
+        print >> log, "pos, ner and dependency..."
+        proc1 = StanfordCoreNLP()
+
+        # preprocess 1: tokenization, POS tagging and name entity using Stanford CoreNLP
+        if START_SNLP: proc1.setup()
+        instances = proc1.parse(tmp_sent_filename)
+
+        tok_sent_filename = tmp_sent_filename+'.tok' # write tokenized sentence file
+        if not os.path.exists(tok_sent_filename):
+            _write_tok_sentences(tok_sent_filename,instances)
+
+        tok_amr_filename = amr_file + '.tok'
+        if not os.path.exists(tok_amr_filename): # write tokenized amr file
+            _write_tok_amr(tok_amr_filename,amr_file,instances)
+            
+        SpanGraph.graphID = 0
+        for i in range(len(instances)):
+
+            amr = AMR.parse_string(amr_strings[i])
+            if 'alignments' in comments[i]:
+                alignment,s2c_alignment = Aligner.readJAMRAlignment(amr,comments[i]['alignments'])
+                #ggraph = SpanGraph.init_ref_graph(amr,alignment,instances[i].tokens)
+                ggraph = SpanGraph.init_ref_graph_abt(amr,alignment,s2c_alignment,instances[i].tokens)
+                #ggraph.pre_merge_netag(instances[i])
+                #print >> log, "Graph ID:%s\n%s\n"%(ggraph.graphID,ggraph.print_tuples())
+                instances[i].addComment(comments[i])
+                instances[i].addAMR(amr)
+                instances[i].addGoldGraph(ggraph)
+
     else:
-        comments,amr_strings = readAMR(amr_file)
-    sentences = [c['snt'] for c in comments] # here should be 'snt'
-    tmp_sentence_file = amr_file+'.sent'
-    if not os.path.exists(tmp_sentence_file):
-        _write_sentences(tmp_sentence_file,sentences)
+        # input file is sentence
+        tmp_sent_filename = input_file 
 
-    print >> log, "pos, ner and dependency..."
-    proc1 = StanfordCoreNLP()
+        print >> log, "pos, ner and dependency..."
+        proc1 = StanfordCoreNLP()
 
-    # preprocess 1: tokenization, POS tagging and name entity using Stanford CoreNLP
-    if START_SNLP: proc1.setup()
-    instances = proc1.parse(tmp_sentence_file)
+        # preprocess 1: tokenization, POS tagging and name entity using Stanford CoreNLP
+        if START_SNLP: proc1.setup()
+        instances = proc1.parse(tmp_sent_filename)
 
-    tok_sent_filename = tmp_sentence_file+'.tok'
-    if not os.path.exists(tok_sent_filename):
-        _write_tok_sentences(tok_sent_filename,instances)
-
-    tok_amr_filename = amr_file + '.tok'
-    if not os.path.exists(tok_amr_filename):
-        _write_tok_amr(tok_amr_filename,amr_file,instances)
+        tok_sent_filename = tmp_sent_filename+'.tok' # write tokenized sentence file
+        if not os.path.exists(tok_sent_filename):
+            _write_tok_sentences(tok_sent_filename,instances)
         
     # preprocess 2: dependency parsing 
     if constants.FLAG_DEPPARSER == "stanford":
@@ -337,19 +374,6 @@ def preprocess(amr_file,START_SNLP=True):
         else:
             raise FileNotFoundError('Semantic role labeling file %s not found!'%(prop_filename))
 
-    SpanGraph.graphID = 0
-    for i in range(len(instances)):
-
-        amr = AMR.parse_string(amr_strings[i])
-        if 'alignments' in comments[i]:
-            alignment,s2c_alignment = Aligner.readJAMRAlignment(amr,comments[i]['alignments'])
-            #ggraph = SpanGraph.init_ref_graph(amr,alignment,instances[i].tokens)
-            ggraph = SpanGraph.init_ref_graph_abt(amr,alignment,s2c_alignment,instances[i].tokens)
-            #ggraph.pre_merge_netag(instances[i])
-            #print >> log, "Graph ID:%s\n%s\n"%(ggraph.graphID,ggraph.print_tuples())
-            instances[i].addComment(comments[i])
-            instances[i].addAMR(amr)
-            instances[i].addGoldGraph(ggraph)
         
     return instances
 '''

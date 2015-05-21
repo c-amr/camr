@@ -63,13 +63,16 @@ def get_dependency_graph(stp_dep,FROMFILE=False):
 def write_parsed_amr(parsed_amr,instances,amr_file,suffix='parsed',hand_alignments=None):
     output = open(amr_file+'.'+suffix,'w')
     for pamr,inst in zip(parsed_amr,instances):
-        #output.write('# ::id %s\n'%(inst.sentID))
-        #output.write('# ::snt %s\n'%(inst.text))
-        output.write('# %s\n' % (' '.join(('::%s %s')%(k,v) for k,v in inst.comment.items() if k in ['id','date','snt-type','annotator'])))
-        output.write('# %s\n' % (' '.join(('::%s %s')%(k,v) for k,v in inst.comment.items() if k in ['tok'])))
-        if hand_alignments:
-            output.write('# ::alignments %s ::gold\n' % (hand_alignments[inst.comment['id']]))
-        output.write('# %s\n' % (' '.join(('::%s %s')%(k,v) for k,v in inst.comment.items() if k in ['alignments'])))
+        if inst.comment:
+            output.write('# %s\n' % (' '.join(('::%s %s')%(k,v) for k,v in inst.comment.items() if k in ['id','date','snt-type','annotator'])))
+            output.write('# %s\n' % (' '.join(('::%s %s')%(k,v) for k,v in inst.comment.items() if k in ['tok'])))
+            if hand_alignments:
+                output.write('# ::alignments %s ::gold\n' % (hand_alignments[inst.comment['id']]))
+            output.write('# %s\n' % (' '.join(('::%s %s')%(k,v) for k,v in inst.comment.items() if k in ['alignments'])))
+        else:
+            output.write('# ::id %s\n'%(inst.sentID))
+            output.write('# ::snt %s\n'%(inst.text))
+
         try:
             output.write(pamr.to_amr_string())
         except TypeError:
@@ -137,7 +140,7 @@ def main():
     arg_parser.add_argument('--model',help='specify the model file')
     arg_parser.add_argument('--feat',help='feature template file')
     arg_parser.add_argument('-iter','--iterations',default=1,type=int,help='training iterations')
-    arg_parser.add_argument('amr_file',nargs='?',help='amr bank file')
+    arg_parser.add_argument('amr_file',nargs='?',help='amr annotation file/input sentence file for parsing')
     arg_parser.add_argument('-e','--eval',nargs=2,help='Error Analysis: give parsed AMR file and gold AMR file')
 
     args = arg_parser.parse_args()
@@ -325,8 +328,9 @@ def main():
         print >> experiment_log ,"DONE TRAINING!"
         
     elif args.mode == 'parse': # actual parsing
-        test_instances = preprocess(amr_file,START_SNLP=False)
+        test_instances = preprocess(amr_file,START_SNLP=False,INPUT_AMR=False)
         #random.shuffle(test_instances)
+        print >> experiment_log, "loading model: ", args.model 
         model = Model.load_model(args.model)
         parser = Parser(model=model,oracle_type=DET_T2G_ORACLE_ABT,action_type=args.actionset,verbose=args.verbose,elog=experiment_log)
         print >> experiment_log ,"BEGIN PARSING"

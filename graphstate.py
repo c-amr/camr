@@ -77,9 +77,9 @@ class GraphState(object):
         GraphState.sent = instance.tokens
         #GraphState.abt_tokens = {}
         GraphState.gold_graph = instance.gold_graph
-        GraphState.gold_graph.abt_node_table = {}
+        if GraphState.gold_graph: GraphState.gold_graph.abt_node_table = {}
         GraphState.deptree = depGraph
-        GraphState.sentID = instance.comment['id']
+        GraphState.sentID = instance.comment['id'] if instance.comment else GraphState.sentID + 1
         GraphState.verbose = verbose
         
         if verbose > 1:
