@@ -10,10 +10,14 @@ amr graph representaion and parsing util
 from collections import defaultdict
 import re,string
 import numpy as np
+from constants import START_ID
 
 # feature window placeholder
 
 __AUX_PUNCTUATIONS = ["''"]
+
+prep_list = ["aboard" ,"about" ,"above" ,"across" ,"after" ,"against" ,"along" ,"amid" ,"among" ,"anti" ,"around" ,"as" ,"at" ,"before" ,"behind" ,"below" ,"beneath" ,"beside" ,"besides" ,"beyond" ,"by" ,"concerning" ,"considering" ,"despite" ,"down" ,"during" ,"except" ,"excepting" ,"excluding" ,"following" ,"for" ,"from" ,"in" ,"inside" ,"into" ,"like" ,"minus" ,"near" ,"of" ,"off" ,"on" ,"onto" ,"opposite" ,"outside" ,"over" ,"past" ,"per" ,"plus" ,"regarding" ,"round" ,"save" ,"since" ,"than" ,"through" ,"to" ,"toward" ,"towards" ,"under" ,"underneath" ,"unlike" ,"until" ,"up" ,"upon" ,"versus" ,"via" ,"with" ,"within" ,"without"]
+
 def ispunctuation(s):
     return s in string.punctuation or s in __AUX_PUNCTUATIONS
 
@@ -270,8 +274,10 @@ class Stack(deque):
         return (t[0],(t[1][0],)) + t[2:]
 
 class Buffer(deque):
+    '''TODO: actually a stack need change name'''
     def __init__(self,alist=[]):
         deque.__init__(self,alist)
+        #self.appendleft(START_ID)
         
     def top(self):
         return self[0]

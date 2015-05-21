@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#JAMR_HOME="/home/j/llc/cwang24/Tools/jamr"
+JAMR_HOME="/home/j/llc/cwang24/Tools/jamr"
 
 #### Config ####
 ${JAMR_HOME}/scripts/config.sh

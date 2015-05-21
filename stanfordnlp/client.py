@@ -18,8 +18,9 @@ class StanfordNLP:
 
 if __name__ == "__main__":
     #test_doc = "Bills on ports and immigration were submitted by Senator Brownback, Republican of Kansas"
-    test_file = 'data/sample-dep-sentences.txt'
+    test_file = 'data/LDC-2013-Sep/Coref/amr-release-proxy.dev-small.sent'
     corenlp = StanfordCoreNLP()
+    corenlp.setup()
     instances = corenlp.parse(test_file)
     pprint(instances[1].toJSON())
 

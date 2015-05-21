@@ -17,7 +17,8 @@ class Data():
         self.amr = None
         self.gold_graph = None
         self.sentID = self.current_sen
-        
+        self.comment = None
+        self.trace_dict = defaultdict(set)
         
         self.tokens.append({'id':0,'form':ROOT_FORM,'lemma':ROOT_LEMMA,'pos':ROOT_POS,'ne':'O','rel':EMPTY})
         
@@ -29,7 +30,7 @@ class Data():
 
     def get_tokenized_sent(self):
         return [tok['form'] for tok in self.tokens][1:]
-
+        
     def addTree( self, tree ):
         self.tree = tree
         
@@ -51,16 +52,33 @@ class Data():
     def addCoref( self, coref_set):
         self.coreference = coref_set
 
+    def addTrace(self, rel, gov, trace):
+        self.trace_dict[int(gov)].add((rel, int(trace)))
+        
     def addDependency( self, rel, l_index, r_index):
         '''CoNLL dependency format'''
         assert int(r_index) == self.tokens[int(r_index)]['id'] and int(l_index) == self.tokens[int(l_index)]['id']
         self.tokens[int(r_index)]['head'] = int(l_index)
         self.tokens[int(r_index)]['rel'] = rel
         
-        
-        #self.dependency[-1].append((rel, l_lemma, r_lemma, l_index, r_index))
+    def addProp(self, prd, frmset, arg, label):
+        self.tokens[prd]['frmset'] = frmset
+        if 'args' in self.tokens[prd]:
+            self.tokens[prd]['args'][arg]=label
+        else:
+            self.tokens[prd]['args']={arg:label}
+
+        # bi-directional
+        if 'pred' in self.tokens[arg]:
+            self.tokens[arg]['pred'][prd]=label
+        else:
+            self.tokens[arg]['pred']={prd:label}
+
     def addAMR(self,amr):
         self.amr = amr
+        
+    def addComment(self,comment):
+        self.comment = comment
         
     def addGoldGraph(self,gold_graph):
         self.gold_graph = gold_graph
@@ -80,6 +98,17 @@ class Data():
                 pre_ne_id = None
         return ne_span_dict
 
+    def printDep(self,tagged=True):
+        out_str = ''
+        for tok in self.tokens:
+            if 'head' in tok:
+                gov_id = tok['head']
+                if tagged:
+                    out_str += "%s(%s-%s:%s, %s-%s:%s)\n" % (tok['rel'], self.tokens[gov_id]['form'], gov_id, self.tokens[gov_id]['pos'], tok['form'], tok['id'], tok['pos'])
+                else:
+                    out_str += "%s(%s-%s, %s-%s)\n" % (tok['rel'], self.tokens[gov_id]['form'], gov_id, tok['form'], tok['id'])
+        return out_str
+        
     def toJSON(self):
         json = {}
         json['tree'] = self.tree

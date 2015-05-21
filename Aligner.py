@@ -120,8 +120,9 @@ class Aligner():
     @staticmethod
     def readJAMRAlignment(amr,JAMR_alignment):
         alignment = defaultdict(list)
-
+        s2c_alignment =  defaultdict(list)
         for one_alignment in JAMR_alignment.split():
+            if one_alignment.startswith('*'): continue
             offset, fragment = one_alignment.split('|')
             start = int(offset.split('-')[0])+1
             end = int(offset.split('-')[1])+1
@@ -135,11 +136,13 @@ class Aligner():
                     concept = variable
                     span = Span(start,end,[concept],ConstTag(concept))
                 alignment[variable].append(span)
+                s2c_alignment[(start,end)].append(variable)
             else:
                 tokens = []
                 tags = []
                 level = 0
                 all_variables = []
+                pre_variable = None
                 variable = None
                 while posIDs:
                     pid = posIDs.pop()
@@ -148,6 +151,7 @@ class Aligner():
                     #    pdb.set_trace()
                     pre_level = level
                     level = len(pid.split('.'))
+                    pre_variable = variable
                     variable = amr.get_variable(pid)
                     if variable == None:
                         import pdb
@@ -155,12 +159,17 @@ class Aligner():
                     
                     if pre_level > level:
                         concept = amr.node_to_concepts[variable]
-                        tags.insert(0,concept)
+                        rel = amr.find_rel(variable,pre_variable)
+                        concept_tag = concept
+                        if pre_variable in amr.node_to_concepts:
+                            concept_tag = concept+'@'+rel[0]
+                        tags.insert(0,concept_tag)
                         all_variables.append(variable)
                     else:
                         if variable in amr.node_to_concepts:
                             concept = amr.node_to_concepts[variable]
                             tokens.insert(0,concept)
+                            #tags.insert(0,concept)
                             all_variables.append(variable)
                         else:
                             if variable == '-': # negation
@@ -168,8 +177,9 @@ class Aligner():
                             tokens.insert(0,variable)
                 span = Span(start,end,tokens,ETag('+'.join(tags)))
                 for v in all_variables:alignment[v].append(span)
+                s2c_alignment[(start,end)].extend(all_variables)
 
-        return alignment
+        return alignment,s2c_alignment
         
     def apply_align(self,sent,amr):
         """apply the alignment for sentence and its amr"""

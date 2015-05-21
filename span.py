@@ -1,3 +1,4 @@
+
 """
 sentence span mapping to special concepts in amr like name,date-entity,etc.
 """
@@ -19,9 +20,12 @@ class Span(object):
     
     def __repr__(self):
         return '%s: start: %s, end: %s , tag:%s'%(self.__class__.__name__,self.start,self.end,self.entity_tag)
+
+    def __eq__(self,other):
+        return other.start == self.start and other.end == self.end
         
     def contains(self,other_span):
-        if other_span.start >= self.start and other_span.end <= self.end:
+        if other_span.start >= self.start and other_span.end <= self.end and not (other_span.start == self.start and other_span.end == self.end):
             return True
         else:
             return False

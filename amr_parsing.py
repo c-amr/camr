@@ -5,7 +5,7 @@ Interface for the parser:
 parse command line 
 read in corpus
 """
-
+from __future__ import absolute_import
 import sys,codecs,time,string
 #from optparse import OptionParser
 import re
@@ -21,7 +21,6 @@ import argparse
 from preprocessing import *
 import constants
 from graphstate import GraphState
-
 #import matplotlib.pyplot as plt
 
 reload(sys)
@@ -61,11 +60,16 @@ def get_dependency_graph(stp_dep,FROMFILE=False):
 
     return dpg_list
 
-def write_parsed_amr(parsed_amr,instances,amr_file,suffix='parsed'):
+def write_parsed_amr(parsed_amr,instances,amr_file,suffix='parsed',hand_alignments=None):
     output = open(amr_file+'.'+suffix,'w')
     for pamr,inst in zip(parsed_amr,instances):
-        output.write('# ::id %s\n'%(inst.sentID))
-        output.write('# ::snt %s\n'%(inst.text))
+        #output.write('# ::id %s\n'%(inst.sentID))
+        #output.write('# ::snt %s\n'%(inst.text))
+        output.write('# %s\n' % (' '.join(('::%s %s')%(k,v) for k,v in inst.comment.items() if k in ['id','date','snt-type','annotator'])))
+        output.write('# %s\n' % (' '.join(('::%s %s')%(k,v) for k,v in inst.comment.items() if k in ['tok'])))
+        if hand_alignments:
+            output.write('# ::alignments %s ::gold\n' % (hand_alignments[inst.comment['id']]))
+        output.write('# %s\n' % (' '.join(('::%s %s')%(k,v) for k,v in inst.comment.items() if k in ['alignments'])))
         try:
             output.write(pamr.to_amr_string())
         except TypeError:
@@ -73,7 +77,27 @@ def write_parsed_amr(parsed_amr,instances,amr_file,suffix='parsed'):
             pdb.set_trace()
         output.write('\n\n')
     output.close()
-    
+
+def write_span_graph(span_graph_pairs,instances,amr_file,suffix='spg'):
+    output_d = open(amr_file+'.'+suffix+'.dep', 'w')
+    output_p = open(amr_file+'.'+suffix+'.parsed','w')
+    output_g = open(amr_file+'.'+suffix+'.gold','w')
+
+    for i in xrange(len(instances)):
+        output_d.write('# id:%s\n%s' % (instances[i].comment['id'],instances[i].printDep()))
+        output_p.write('# id:%s\n%s' % (instances[i].comment['id'],span_graph_pairs[i][0].print_dep_style_graph()))
+        output_g.write('# id:%s\n%s' % (instances[i].comment['id'],span_graph_pairs[i][1].print_dep_style_graph()))
+        output_p.write('# eval:Unlabeled Precision:%s Recall:%s F1:%s\n' % (span_graph_pairs[i][2][0],span_graph_pairs[i][2][1],span_graph_pairs[i][2][2]))
+        output_p.write('# eval:Labeled Precision:%s Recall:%s F1:%s\n' % (span_graph_pairs[i][2][3],span_graph_pairs[i][2][4],span_graph_pairs[i][2][5]))
+        output_p.write('# eval:Tagging Precision:%s Recall:%s\n' % (span_graph_pairs[i][2][6],span_graph_pairs[i][2][7]))
+        output_d.write('\n')
+        output_p.write('\n')
+        output_g.write('\n')
+
+    output_d.close()
+    output_p.close()
+    output_g.close()
+        
 def main():
     '''
     usage = "Usage:%prog [options] amr_file"
@@ -102,40 +126,43 @@ def main():
     
     arg_parser.add_argument('-v','--verbose',type=int,default=0,help='set up verbose level for debug')
     arg_parser.add_argument('-b','--begin',type=int,default=0,help='specify which sentence to begin the alignment or oracle testing for debug')
-    arg_parser.add_argument('-s','--start_step',type=int,default=0,help='specify which step to begin oracle testing for debug')
+    arg_parser.add_argument('-s','--start_step',type=int,default=0,help='specify which step to begin oracle testing;for debug')
     #arg_parser.add_argument('-i','--input_file',help='the input: preprocessed data instances file for aligner or training')
     arg_parser.add_argument('-d','--dev',help='development file')
     arg_parser.add_argument('-as','--actionset',choices=['basic'],default='basic',help='choose different action set')
-    arg_parser.add_argument('-m','--mode',choices=['preprocess','test_gold_graph','align','userGuide','oracleGuide','train','parse'],help="preprocess:generate pos tag, dependency tree, ner\n" "align:do alignment between AMR graph and sentence")
-    arg_parser.add_argument('-dp','--depparser',choices=['stanford','turbo','mate','malt','stdconv+charniak'],default='stanford',help='choose the dependency parser, default:{stanford}')
+    arg_parser.add_argument('-m','--mode',choices=['preprocess','test_gold_graph','align','userGuide','oracleGuide','train','parse','eval'],help="preprocess:generate pos tag, dependency tree, ner\n" "align:do alignment between AMR graph and sentence string")
+    arg_parser.add_argument('-dp','--depparser',choices=['stanford','stanfordConvert','stdconv+charniak','clear','mate','turbo'],default='stanford',help='choose the dependency parser')
+    arg_parser.add_argument('--coref',action='store_true',help='flag to enable coreference information')
+    arg_parser.add_argument('--prop',action='store_true',help='flag to enable semantic role labeling information')
     arg_parser.add_argument('--model',help='specify the model file')
     arg_parser.add_argument('--feat',help='feature template file')
-    arg_parser.add_argument('-iter','--iterations',type=int,help='training iterations')
-    arg_parser.add_argument('amr_file',nargs='?',help='amr bank file for preprocessing')
-    
+    arg_parser.add_argument('-iter','--iterations',default=1,type=int,help='training iterations')
+    arg_parser.add_argument('amr_file',nargs='?',help='amr bank file')
+    arg_parser.add_argument('-e','--eval',nargs=2,help='Error Analysis: give parsed AMR file and gold AMR file')
 
     args = arg_parser.parse_args()
 
     amr_file = args.amr_file
     instances = None
     train_instance = None
-
+    constants.FLAG_COREF=args.coref
+    constants.FLAG_PROP=args.prop
     constants.FLAG_DEPPARSER=args.depparser
 
     # using corenlp to preprocess the sentences 
     if args.mode == 'preprocess':
-        instances = preprocess(amr_file)
-        print >> experiment_log, "Done preprocessing!"
+        instances = preprocess(amr_file,START_SNLP=False)
+        print "Done preprocessing!"
     # preprocess the JAMR aligned amr
     elif args.mode == 'test_gold_graph':     
         instances = preprocess(amr_file,False)
         #instances = pickle.load(open('data/gold_edge_graph.pkl','rb'))
-        pseudo_gold_amr = []
+        gold_amr = []
         for inst in instances:
             GraphState.sent = inst.tokens
-            pseudo_gold_amr.append(GraphState.get_parsed_amr(inst.gold_graph))
+            gold_amr.append(GraphState.get_parsed_amr(inst.gold_graph))
         #pseudo_gold_amr = [GraphState.get_parsed_amr(inst.gold_graph) for inst in instances]
-        write_parsed_amr(pseudo_gold_amr,instances,amr_file,'gold')
+        write_parsed_amr(gold_amr,instances,amr_file,'abt.gold')
         #instances = preprocess_aligned(amr_file)
         print "Done output AMR!"
     # do alignment
@@ -202,46 +229,82 @@ def main():
     # test deterministic oracle 
     elif args.mode == 'oracleGuide':
         
-        train_instances = preprocess(amr_file,False)
+        train_instances = preprocess(amr_file,START_SNLP=False)
+        try:
+            hand_alignments = load_hand_alignments(amr_file+str('.hand_aligned'))
+        except IOError:
+            hand_alignments = []
+
 
         start_step = args.start_step
         begin = args.begin
-        amr_parser = Parser(oracle_type=DETERMINE_TREE_TO_GRAPH_ORACLE_SC,verbose=args.verbose)
+        amr_parser = Parser(oracle_type=DET_T2G_ORACLE_ABT,verbose=args.verbose)
         #ref_graphs = pickle.load(open('./data/ref_graph.p','rb'))
         n_correct_total = .0
         n_parsed_total = .0
         n_gold_total = .0
         pseudo_gold_amr = []
+        n_correct_tag_total = .0
+        n_parsed_tag_total = 0.
+        n_gold_tag_total = .0
+
+        
+        gold_amr = []
+        aligned_instances = []
+        #print "shuffling training instances"
+        #random.shuffle(train_instances)
         for instance in train_instances[begin:]:
+            
+            if hand_alignments and instance.comment['id'] not in hand_alignments: continue
             state = amr_parser.testOracleGuide(instance,start_step)
-            n_correct_arc,n1,n_parsed_arc, n_gold_arc,_,_,_ = state.evaluate()
-            assert n_correct_arc == n1
+            n_correct_arc,n1,n_parsed_arc, n_gold_arc,n_correct_tag,n_parsed_tag,n_gold_tag = state.evaluate()
+            #assert n_correct_arc == n1
+            if n_correct_arc != n1:
+                import pdb
+                pdb.set_trace()
             n_correct_total += n_correct_arc
             n_parsed_total += n_parsed_arc
             n_gold_total += n_gold_arc
             p = n_correct_arc/n_parsed_arc if n_parsed_arc else .0
+            r = n_correct_arc/n_gold_arc if n_parsed_arc else .0
             indicator = 'PROBLEM!' if p < 0.5 else ''
-            if args.dev > 2: print >> sys.stderr, "Accuracy: %s  %s\n" % (p,indicator)
-            #if instance.sentID == 704:
-            #    import pdb
-            #    pdb.set_trace()
+            if args.verbose > 2: print >> sys.stderr, "Precision: %s Recall: %s  %s\n" % (p,r,indicator)
+            n_correct_tag_total +=  n_correct_tag
+            n_parsed_tag_total +=  n_parsed_tag
+            n_gold_tag_total += n_gold_tag
+            p1 = n_correct_tag/n_parsed_tag if n_parsed_tag else .0
+            r1 = n_correct_tag/n_gold_tag if n_parsed_tag else .0
+            if args.verbose > 2: print >> sys.stderr,"Tagging Precision:%s Recall:%s" % (p1,r1)
+
+            instance.comment['alignments'] += ''.join(' %s-%s|%s'%(idx-1,idx,instance.amr.get_pid(state.A.abt_node_table[idx])) for idx in state.A.abt_node_table if isinstance(idx,int))
+
+            aligned_instances.append(instance)
             pseudo_gold_amr.append(GraphState.get_parsed_amr(state.A))
+            #gold_amr.append(instance.amr)
             #assert set(state.A.tuples()) == set(instance.gold_graph.tuples())
         pt = n_correct_total/n_parsed_total if n_parsed_total != .0 else .0
         rt = n_correct_total/n_gold_total if n_gold_total !=.0 else .0
         ft = 2*pt*rt/(pt+rt) if pt+rt != .0 else .0
-        write_parsed_amr(pseudo_gold_amr,train_instances,amr_file,'pseudo-gold')
+        write_parsed_amr(pseudo_gold_amr,aligned_instances,amr_file,'pseudo-gold',hand_alignments)
         print "Total Accuracy: %s, Recall: %s, F-1: %s" % (pt,rt,ft)
 
+        tp = n_correct_tag_total/n_parsed_tag_total if n_parsed_tag_total != .0 else .0
+        tr = n_correct_tag_total/n_gold_tag_total if n_gold_tag_total != .0 else .0
+        print "Tagging Precision:%s Recall:%s" % (tp,tr)
+
         #amr_parser.record_actions('data/action_set.txt')
-    elif args.mode == 'train': # actual parsing
-        train_instances = preprocess(amr_file,False)
-        if args.dev: dev_instances = preprocess(args.dev,False)
+    elif args.mode == 'train': # training
+        print "Parser Config:"
+        print "Incorporate Coref Information: %s"%(constants.FLAG_COREF)
+        print "Incorporate SRL Information: %s"%(constants.FLAG_PROP)
+        print "Dependency parser used: %s"%(constants.FLAG_DEPPARSER)
+        train_instances = preprocess(amr_file,START_SNLP=False)
+        if args.dev: dev_instances = preprocess(args.dev,START_SNLP=False)
         feat_template = args.feat if args.feat else None
         model = Model(elog=experiment_log)
-        model.setup(action_type=args.actionset,instances=train_instances,feature_templates_file=feat_template)
         #model.output_feature_generator()
-        parser = Parser(model=model,action_type=args.actionset,verbose=args.verbose,elog=experiment_log)
+        parser = Parser(model=model,oracle_type=DET_T2G_ORACLE_ABT,action_type=args.actionset,verbose=args.verbose,elog=experiment_log)
+        model.setup(action_type=args.actionset,instances=train_instances,parser=parser,feature_templates_file=feat_template)
         
         print >> experiment_log, "BEGIN TRAINING!"
         for iter in xrange(1,args.iterations+1):
@@ -256,26 +319,44 @@ def main():
             model.save_model(args.model+'-iter'+str(iter)+'.m')
             if args.dev:
                 print >> experiment_log ,"Result on develop set:"                
-                parsed_amr = parser.parse_corpus_test(dev_instances)
-                write_parsed_amr(parsed_amr,dev_instances,args.dev)
+                _,parsed_amr = parser.parse_corpus_test(dev_instances)
+                write_parsed_amr(parsed_amr,dev_instances,args.dev,str(iter)+'.parsed')
 
         print >> experiment_log ,"DONE TRAINING!"
         
-    elif args.mode == 'parse':        
-        test_instances = preprocess(amr_file,False)
-
+    elif args.mode == 'parse': # actual parsing
+        test_instances = preprocess(amr_file,START_SNLP=False)
+        #random.shuffle(test_instances)
         model = Model.load_model(args.model)
-        parser = Parser(model=model,action_type=args.actionset,verbose=args.verbose,elog=experiment_log)
+        parser = Parser(model=model,oracle_type=DET_T2G_ORACLE_ABT,action_type=args.actionset,verbose=args.verbose,elog=experiment_log)
         print >> experiment_log ,"BEGIN PARSING"
-        results = parser.parse_corpus_test(test_instances)
-        write_parsed_amr(results,test_instances,amr_file)
+        span_graph_pairs,results = parser.parse_corpus_test(test_instances)
+        write_parsed_amr(results,test_instances,amr_file,suffix='parsed')
+        #write_span_graph(span_graph_pairs,test_instances,amr_file,suffix='spg.50')
+        ################
+        # for eval     #
+        ################
+        #pickle.dump(span_graph_pairs,open('data/eval/%s_spg_pair.pkl'%(amr_file),'wb'),pickle.HIGHEST_PROTOCOL)
+        #pickle.dump(test_instances,open('data/eval/%s_instances.pkl'%(amr_file),'wb'),pickle.HIGHEST_PROTOCOL)
         print >> experiment_log ,"DONE PARSING"
-        #pickle.dump(results,open('data/gold_edge_graph.pkl','wb'),pickle.HIGHEST_PROTOCOL)
+        
         #plt.hist(results)
         #plt.savefig('result.png')
+
+    elif args.mode == 'eval':
+        '''break down error analysis'''
+        # TODO: here use pickled file, replace it with parsed AMR and gold AMR
+        span_graph_pairs = pickle.load(open(args.eval[0],'rb'))
+        instances = pickle.load(open(args.eval[1],'rb'))
+        
+        amr_parser = Parser(oracle_type=DET_T2G_ORACLE_ABT,verbose=args.verbose)
+        error_stat = defaultdict(lambda:defaultdict(lambda:defaultdict(list)))
+        for spg_pair,instance in zip(span_graph_pairs,instances):
+            amr_parser.errorAnalyze(spg_pair[0],spg_pair[1],instance,error_stat)
+
     else:
         arg_parser.print_help()
-    
+
 if __name__ == "__main__":
     main()
 

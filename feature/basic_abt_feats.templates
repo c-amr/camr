@@ -1,0 +1,188 @@
+# COMMENT HERE
+# TODO: FEATURE CONTEXT WINDOW
+
+# UNIGRAM
+s0_ne	tx		
+s0_w	tx	
+s0_lemma	tx	
+s0_t		tx
+s0_dl		tx
+s0_len		tx
+
+# +
+s0_t	s0_txv
+
+# not involve with tag to predict +
+#s0_brown4
+#s0_brown6
+##s0_brown8
+#s0_brown10
+#s0_brown20
+
+# prop feature
+##eqfrmset
+#s0_frmset
+#s0_eqfrmset
+#b0_isarg
+#b0_arglabel
+#b0_dl	b0_arglabel
+#a0_isprd
+#a0_prdlabel
+
+# +
+#b0_isprd
+#b0_prdlabel
+#a0_isarg
+#a0_arglabel
+
+# only invoke when at START_ID
+#s0_reph
+s0_isnom
+s0_nech
+s0_lemma	s0_nech
+s0_isnom	s0_nech
+s0_c1lemma	tx
+s0_c1dl		s0_c1lemma
+s0_cpt		s0_p1_ne	s0_c1lemma
+
+# only invoke when beta is None 
+##s0_isleaf
+##s0_isleaf	s0_ne	s0_p1_ne
+
+b0_ne
+b0_w
+b0_lemma
+b0_t	
+b0_dl
+b0_len
+b0_reph
+
+#b0_brown4
+#b0_brown6
+##b0_brown8
+#b0_brown10
+#b0_brown20
+
+# parent to attach
+a0_ne
+a0_w
+a0_lemma
+a0_t	
+a0_dl
+##a0_iscycle
+#a0_istrace
+#a0_rtr
+##a0_dl	a0_istrace
+#a0_dl	a0_istrace	a0_rtr
+
+#a0_brown4
+#a0_brown6
+##a0_brown8
+#a0_brown10
+#a0_brown20
+
+# first parent 
+s0_p1_ne
+s0_p1_w
+s0_p1_lemma
+s0_p1_t
+s0_p1_dl
+
+# -
+#s0_p1_brown4
+#s0_p1_brown6
+#s0_p1_brown10
+#s0_p1_brown20
+
+# path
+b0_pathpwd	b0_lemma	s0_lemma
+b0_apathpwd	a0_lemma	b0_lemma
+
+# --
+#b0_pathpwd	b0_brown10	s0_brown10
+#b0_apathpwd	a0_brown10	b0_brown10
+
+b0_pathpwd
+b0_apathpwd
+
+# make conjunction swap specific
+b0_lemma	b0_rsb_dl
+# -
+#b0_brown20	b0_rsb_dl
+
+# prevent 'and' swap too greedy
+b0_lemma	b0_nswp
+# -
+#b0_brown20	b0_nswp
+
+# sentence distance between s0 and b0
+dist1
+dist1	b0_pathp
+dist2
+dist2	b0_apathp
+
+# left label set -
+# s0_lsl
+
+# BIGRAM
+s0_lemma   b0_t
+s0_lemma   b0_dl
+s0_t	   b0_lemma
+s0_dl	   b0_lemma
+s0_ne	   b0_ne
+
+# ?
+#s0_ne	b0_ne	b0_cpt
+
+# +
+#s0_brown20 b0_brown4
+#s0_brown20 b0_dl
+#s0_brown4  b0_brown20
+#s0_dl	   b0_brown20
+
+
+
+##a0_lemma   b0_t
+##a0_lemma   b0_dl
+a0_t	   b0_lemma
+a0_dl	   b0_lemma
+a0_ne	   b0_ne
+
+# -
+#a0_brown4  b0_brown20
+#a0_dl	   b0_brown20
+
+a0_cpt	   b0_cpt
+a0_cpt	   b0_cpt	s0_lemma
+a0_cpt	   b0_ne
+
+
+##########################################################
+# BIGRAM
+# s0_w 	s0_t	b0_w	b0_t
+# s0_w 	s0_t	b0_w
+# s0_w 	s0_t	b0_t
+# s0_t	b0_w	b0_t
+# s0_w 	b0_w	b0_t
+# s0_t	b0_t
+
+# s0_w	b0_w	b0_dl
+# s0_t	b0_t	b0_dl
+
+# current node and its first parent pair
+# s0_w 	s0_t	s0_p1_w	s0_p1_t
+# s0_w 	s0_t	s0_p1_w
+# s0_w 	s0_t	s0_p1_t
+# s0_t	s0_p1_w	s0_p1_t
+# s0_w 	s0_p1_w	s0_p1_t
+# s0_t	s0_p1_t
+
+# FOR CONTROL VERB;ADDCHILD
+# s0_p1_w	s0_p1_t	s0_lsb_w	s0_lsb_t
+# s0_p1_t	s0_lsb_t
+# s0_p1_w	s0_lsb_w
+
+# a0_rsb_w	a0_rsb_t	a0_r2sb_w	a0_r2sb_t
+# a0_rsb_w	a0_rsb_t
+# a0_r2sb_w	a0_r2sb_t	
+

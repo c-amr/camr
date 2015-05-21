@@ -26,13 +26,11 @@ from unidecode import unidecode
 from nltk.tree import Tree
 import re
 from data import Data
-import constants
-
 
 VERBOSE = True
 STATE_START, STATE_TEXT, STATE_WORDS, STATE_TREE, STATE_DEPENDENCY, STATE_COREFERENCE = 0, 1, 2, 3, 4, 5
 WORD_PATTERN = re.compile('\[([^\]]+)\]')
-CR_PATTERN = re.compile(r"\((\d*),(\d)*,\[(\d*),(\d*)\)\) -> \((\d*),(\d)*,\[(\d*),(\d*)\)\), that is: \"(.*)\" -> \"(.*)\"")
+CR_PATTERN = re.compile(r"\((\d*),(\d*),\[(\d*),(\d*)\)\) -> \((\d*),(\d*),\[(\d*),(\d*)\)\), that is: \"(.*)\" -> \"(.*)\"")
 
 def parse_bracketed(s):
     '''Parse word features [abc=... def = ...]
@@ -66,7 +64,7 @@ def parse_parser_results(text):
     data = Data()
     
     state = STATE_START
-    for line in re.split("\n(?!=)",text):
+    for line in re.split("\r\n(?!=)",text):
         line = line.strip()
         if line == 'NLP>':
             break
@@ -79,6 +77,8 @@ def parse_parser_results(text):
             state = STATE_WORDS
         
         elif state == STATE_WORDS:
+            if len(line) == 0:
+                continue
             if not line.startswith("[Text="):
                 raise Exception('Parse error. Could not find "[Text=" in: %s' % line)
             for s in WORD_PATTERN.findall(line):
@@ -102,6 +102,7 @@ def parse_parser_results(text):
             else:
                 pass
                 '''
+                # don't need here
                 split_entry = re.split("\(|, ", line[:-1])
                 if len(split_entry) == 3:
                     rel, l_lemma, r_lemma = split_entry
@@ -120,76 +121,36 @@ def parse_parser_results(text):
                 data.addCoref(coref_set)
             else:
                 for src_i, src_pos, src_l, src_r, sink_i, sink_pos, sink_l, sink_r, src_word, sink_word in CR_PATTERN.findall(line):
-                    src_i, src_pos, src_l, src_r = int(src_i)-1, int(src_pos)-1, int(src_l)-1, int(src_r)-1
-                    sink_i, sink_pos, sink_l, sink_r = int(sink_i)-1, int(sink_pos)-1, int(sink_l)-1, int(sink_r)-1
+                    src_i, src_pos, src_l, src_r = int(src_i), int(src_pos), int(src_l), int(src_r)
+                    sink_i, sink_pos, sink_l, sink_r = int(sink_i), int(sink_pos), int(sink_l), int(sink_r)
                     coref_set.append(((src_word, src_i, src_pos, src_l, src_r), (sink_word, sink_i, sink_pos, sink_l, sink_r)))
     
     return data
 
 def add_sep_dependency(instances,result):
-    if constants.FLAG_DEPPARSER == 'stanford':
-        i = 0
-        for line in result.split('\n'):
-            if line.strip():
-                split_entry = re.split("\(|, ", line[:-1])
+    i = 0
+    for line in result.split('\n'):
+        if line.strip():
+            split_entry = re.split("\(|, ", line[:-1])
 
-                if len(split_entry) == 3:
-                    rel, l_lemma, r_lemma = split_entry
-                    m = re.match(r'(?P<lemma>.+)-(?P<index>[^-]+)', l_lemma)
-                    l_lemma, l_index = m.group('lemma'), m.group('index')
-                    m = re.match(r'(?P<lemma>.+)-(?P<index>[^-]+)', r_lemma)
-                    r_lemma, r_index = m.group('lemma'), m.group('index')
-
-                    instances[i].addDependency( rel, l_index, r_index )
-
-            else:
-                i += 1
-
-    elif constants.FLAG_DEPPARSER in ["turbo","malt"]:
-        i = 0
-        for line in result.split('\n'):
-            if line.strip():
-                line = line.split()
-                instances[i].addDependency( line[7], line[6], line[0])
-            else:
-                i += 1
-
-    elif constants.FLAG_DEPPARSER == "mate":
-        i = 0
-        for line in result.split('\n'):
-            if line.strip():
-                line = line.split()
-                instances[i].addDependency( line[11], line[9], line[0])
-            else:
-                i += 1
-    elif constants.FLAG_DEPPARSER == 'stdconv+charniak':
-        i = 0
-        for line in result.split('\n'):
-            if line.strip():
-                split_entry = re.split("\(|, ", line[:-1])
+            if len(split_entry) == 3:
+                rel, l_lemma, r_lemma = split_entry
+                m = re.match(r'(?P<lemma>.+)-(?P<index>[^-]+)', l_lemma)
+                l_lemma, l_index = m.group('lemma'), m.group('index')
+                m = re.match(r'(?P<lemma>.+)-(?P<index>[^-]+)', r_lemma)
+                r_lemma, r_index = m.group('lemma'), m.group('index')
                 
-                if len(split_entry) == 3:
-                    rel, l_lemma, r_lemma = split_entry
-                    m = re.match(r'(?P<lemma>.+)-(?P<index>[^-]+)', l_lemma)
-                    l_lemma, l_index = m.group('lemma'), m.group('index')
-                    m = re.match(r'(?P<lemma>[^\^]+)(\^(?P<trace>[^-]+))?-(?P<index>[^-]+)', r_lemma)
-                    r_lemma,r_trace, r_index = m.group('lemma'), m.group('trace'), m.group('index')
-
-                    if r_index != 'null':
-                        #print >> sys.stderr, line                        
-                        instances[i].addDependency( rel, l_index, r_index )
-                    #if r_trace is not None:
-                    #    instances[i].addTrace( rel, l_index, r_trace )                      
+                instances[i].addDependency( rel, l_lemma, r_lemma, l_index, r_index )
                 
-            else:
-                i += 1
-    else:
-        raise ValueError("Unknown dependency format!")
+        else:
+            i += 1
 
 class StanfordCoreNLP(object):
     """
     Command-line interaction with Stanford's CoreNLP java utilities.
-    Can be run as a JSON-RPC server or imported as a module.
+    Can be run as a JSON-RPC server or imported as a module. We use CoreNLP 
+    to preprocess the sentence to get universal tokenization, lemma, name entity 
+    and POS if possible. However, we may use different dependency parsers here.
     """
 
 
@@ -228,7 +189,7 @@ class StanfordCoreNLP(object):
 
         #Change from ':' to ';'
         # spawn the server
-        start_corenlp = "%s -Xmx1800m -cp %s %s %s" % (java_path, ':'.join(jars), classname, props)
+        start_corenlp = "%s -Xmx2500m -cp %s %s %s" % (java_path, ':'.join(jars), classname, props)
         if VERBOSE: print start_corenlp
         self.corenlp = pexpect.spawn(start_corenlp)
         
@@ -243,8 +204,8 @@ class StanfordCoreNLP(object):
         pbar.update(3)
         self.corenlp.expect("done.", timeout=600) # Load CoNLL classifier (~50sec)
         pbar.update(4)
-        #self.corenlp.expect("done.", timeout=200) # Loading PCFG (~3sec)
-        #pbar.update(5)
+        self.corenlp.expect("done.", timeout=200) # Loading PCFG (~3sec)
+        pbar.update(5)
         self.corenlp.expect("Entering interactive shell.")
         pbar.finish()
     
@@ -267,14 +228,14 @@ class StanfordCoreNLP(object):
         # function of the text's length.
         # anything longer than 5 seconds requires that you also
         # increase timeout=5 in jsonrpc.py
-        max_expected_time = min(10, 3 + len(text) / 20.0)
+        max_expected_time = min(20, 3 + len(text) / 20.0)
         end_time = time.time() + max_expected_time
         
         incoming = ""
         while True:
             # Time left, read more data
             try:
-                incoming += self.corenlp.read_nonblocking(2000, 1)
+                incoming += self.corenlp.read_nonblocking(40000, 1800)
                 if "\nNLP>" in incoming: break
                 time.sleep(0.0001)
             except pexpect.TIMEOUT:
@@ -291,7 +252,7 @@ class StanfordCoreNLP(object):
         if VERBOSE: print "%s\n%s" % ('='*40, repr(incoming))
         return incoming
 
-
+    '''
     def sep_depparsing(self,sent_filename):
         """
         separate dependency parser
@@ -302,7 +263,7 @@ class StanfordCoreNLP(object):
        
         # if CoreNLP libraries are in a different directory,
         # change the corenlp_path variable to point to them
-        corenlp_path = os.path.relpath(__file__).split('/')[0]+"/stanford-parser-full-2014-01-04/"
+        corenlp_path = os.path.relpath(__file__).split('/')[0]+"/stanford-parser/"
         
         java_path = "java"
         classname = "edu.stanford.nlp.parser.lexparser.LexicalizedParser"
@@ -328,18 +289,21 @@ class StanfordCoreNLP(object):
         print 'Incoming',incoming
         
         return incoming
+    '''
 
     def parse(self, sent_filename):
         """ 
-        This function takes a text string, sends it to the Stanford parser,
+        This function takes a text string, sends it to the Stanford CoreNLP,
         reads in the result, parses the results and returns a list
         of data instances for each parsed sentence. Dependency parsing may operate 
         seperately for easy changing dependency parser.
         """
         
         instances = []
-        prp_filename = sent_filename.rsplit('.',1)[0]+'.prp' # preprocessing file
+        prp_filename = sent_filename.rsplit('.',1)[0]+'.prp' # preprocessed file
+        #tok_filename = sent_filename + '.tok' # tokenized sentences
         if os.path.exists(prp_filename):
+            #output_tok = open(tok_filename,'w')
             print 'Read token,lemma,name entity file %s...' % (prp_filename)
             prp_result = open(prp_filename,'r').read()
 
@@ -349,9 +313,12 @@ class StanfordCoreNLP(object):
                 except Exception, e:
                     if VERBOSE: print traceback.format_exc()
                     raise e
+                #output_tok.write("%s\n" % (' '.join(data.get_tokenized_sent())))
                 instances.append(data)
+            #output_tok.close()
         else:
-            output_prp = open(prp_filename,'w')            
+            output_prp = open(prp_filename,'w')          
+            #output_tok = open(tok_filename,'w')
             for i,line in enumerate(open(sent_filename,'r').readlines()):
                 result = self._parse(line)
                 output_prp.write("%s\n%s"%('-'*40,result))
@@ -360,12 +327,13 @@ class StanfordCoreNLP(object):
                 except Exception, e:
                     if VERBOSE: print traceback.format_exc()
                     raise e
+                #output_tok.write("%s\n" % (' '.join(data.get_tokenized_sent())))
                 instances.append(data)
             output_prp.close()
-        
-        #if seq_depparsing:
-        if constants.FLAG_DEPPARSER == 'stanford':
-            dep_filename = sent_filename +'.tok.stanford.dep'
+            #output_tok.close()
+        '''
+        if seq_depparsing:
+            dep_filename = sent_filename.rsplit('_',1)[0]+'_dep.txt'
             if os.path.exists(dep_filename):
                 print 'Read dependency file %s...' % (dep_filename)
                 dep_result = open(dep_filename,'r').read()
@@ -375,26 +343,9 @@ class StanfordCoreNLP(object):
                 output_dep = open(dep_filename,'w')
                 output_dep.write(dep_result)
                 output_dep.close()
-            add_sep_dependency(instances,dep_result)
-        else:
-            dep_filename = None
-            if constants.FLAG_DEPPARSER == 'stdconv+charniak':
-                dep_filename = sent_filename+'.tok.charniak.parse.dep'
-            elif constants.FLAG_DEPPARSER == 'turbo':
-                dep_filename = sent_filename +'.tok.turbo.dep'
-            elif constants.FLAG_DEPPARSER == 'mate':
-                dep_filename = sent_filename + '.tok.mate.dep'
-            elif constants.FLAG_DEPPARSER == 'malt':
-                dep_filename =sent_filename + '.tok.malt.dep'
-            else:
-                raise ValueError('Invalid Dependency Format!')                
-            if os.path.exists(dep_filename):
-                print 'Read dependency file %s...' % (dep_filename)
-                dep_result = open(dep_filename,'r').read()
-            else:
-                raise FileNotFoundError('charniak parse dependency file %s not found'%(dep_filename))
-            add_sep_dependency(instances,dep_result)
 
+            add_sep_dependency(instances,dep_result)
+         '''   
         return instances
 
 
