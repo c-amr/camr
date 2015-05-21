@@ -176,7 +176,7 @@ __DEP_AMR_REL_TABLE = _load_rules(DEFAULT_RULE_FILE)
 def get_fake_amr_relation_mapping(dep_rel):
     return __DEP_AMR_REL_TABLE[dep_rel]
 
-DEFAULT_NOM_FILE = './data/nombank-dict.1.0'
+DEFAULT_NOM_FILE = './resources/nombank-dict.1.0'
 
 def _read_nom_list(nombank_dict_file):
     nomdict = open(nombank_dict_file,'r')
@@ -190,7 +190,7 @@ def _read_nom_list(nombank_dict_file):
 
 NOMLIST = _read_nom_list(DEFAULT_NOM_FILE)
 
-DEFAULT_BROWN_CLUSTER = './wclusters-engiga'
+DEFAULT_BROWN_CLUSTER = './resources/wclusters-engiga'
     
 def _load_brown_cluster(dir_path,cluster_num=1000):
     cluster_dict = defaultdict(str)
