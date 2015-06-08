@@ -13,6 +13,37 @@ class DepParser(object):
         raise NotImplemented("Must implement setup method!")
 
 
+class CharniakParser(DepParser):
+    
+    def parse(self,sent_filename):
+        """
+        use Charniak parser to parse sentences then convert results to Stanford Dependency
+        """
+        from bllipparser.ModelFetcher import download_and_install_model
+        from bllipparser import RerankingParser
+        #path_to_model = './bllip-parser/models/WSJ+Gigaword'
+        #if not.path.exists(path_to_model):
+        model_type = 'WSJ+Gigaword'
+        path_to_model = download_and_install_model(model_type,'./bllip-parser/models')
+        print "Loading Charniak parser model: %s ..." % (model_type)
+        rrp = RerankingParser.from_unified_model_dir(path_to_model)
+        print "Begin Charniak parsing ..."
+        parsed_filename = sent_filename+'.charniak.parse'
+        parsed_trees = ''
+        with open(sent_filename,'r') as f:
+            for l in f:
+                parsed_trees += rrp.simple_parse(l.strip().split())
+                parsed_trees += '\n'
+
+        with open(parsed_filename,'w') as of:
+            of.write(parsed_trees)
+                
+
+        # convert parse tree to dependency tree
+        print "Convert Charniak parse tree to Stanford Dependency tree ..."
+        subprocess.call('./scripts/stdconvert.sh '+parsed_filename,shell=True)
+        
+
 class StanfordDepParser(DepParser):
     
     def parse(self,sent_filename):

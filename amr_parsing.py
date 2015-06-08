@@ -154,7 +154,7 @@ def main():
 
     # using corenlp to preprocess the sentences 
     if args.mode == 'preprocess':
-        instances = preprocess(amr_file,START_SNLP=False)
+        instances = preprocess(amr_file,START_SNLP=True,INPUT_AMR=False)
         print "Done preprocessing!"
     # preprocess the JAMR aligned amr
     elif args.mode == 'test_gold_graph':     
@@ -330,7 +330,7 @@ def main():
     elif args.mode == 'parse': # actual parsing
         test_instances = preprocess(amr_file,START_SNLP=False,INPUT_AMR=False)
         #random.shuffle(test_instances)
-        print >> experiment_log, "loading model: ", args.model 
+        print >> experiment_log, "Loading model: ", args.model 
         model = Model.load_model(args.model)
         parser = Parser(model=model,oracle_type=DET_T2G_ORACLE_ABT,action_type=args.actionset,verbose=args.verbose,elog=experiment_log)
         print >> experiment_log ,"BEGIN PARSING"

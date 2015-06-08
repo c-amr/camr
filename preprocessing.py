@@ -6,7 +6,7 @@ from pprint import pprint
 import cPickle as pickle
 from Aligner import Aligner
 from common.SpanGraph import SpanGraph
-from depparser import StanfordDepParser,ClearDepParser,TurboDepParser, MateDepParser
+from depparser import CharniakParser,StanfordDepParser,ClearDepParser,TurboDepParser, MateDepParser
 from collections import OrderedDict
 import constants
 
@@ -250,7 +250,7 @@ def preprocess(input_file,START_SNLP=True,INPUT_AMR=True):
             _write_sentences(tmp_sent_filename,sentences)
 
 
-        print >> log, "pos, ner and dependency..."
+        print >> log, "Start Stanford CoreNLP..."
         proc1 = StanfordCoreNLP()
 
         # preprocess 1: tokenization, POS tagging and name entity using Stanford CoreNLP
@@ -283,7 +283,7 @@ def preprocess(input_file,START_SNLP=True,INPUT_AMR=True):
         # input file is sentence
         tmp_sent_filename = input_file 
 
-        print >> log, "pos, ner and dependency..."
+        print >> log, "Start Stanford CoreNLP ..."
         proc1 = StanfordCoreNLP()
 
         # preprocess 1: tokenization, POS tagging and name entity using Stanford CoreNLP
@@ -321,13 +321,12 @@ def preprocess(input_file,START_SNLP=True,INPUT_AMR=True):
 
     elif constants.FLAG_DEPPARSER == "stdconv+charniak":
         dep_filename = tok_sent_filename+'.charniak.parse.dep'
-        if os.path.exists(dep_filename):
-            print 'Read dependency file %s...' % (dep_filename)
-
-            dep_result = open(dep_filename,'r').read()
-        else:
-            raise IOError('Converted dependency file %s not founded' % (dep_filename))
-
+        if not os.path.exists(dep_filename):
+            dparser = CharniakParser()
+            dparser.parse(tok_sent_filename)
+            #raise IOError('Converted dependency file %s not founded' % (dep_filename))
+        print 'Read dependency file %s...' % (dep_filename)
+        dep_result = open(dep_filename,'r').read()
         _add_dependency(instances,dep_result,constants.FLAG_DEPPARSER)
             
     elif constants.FLAG_DEPPARSER == "clear":

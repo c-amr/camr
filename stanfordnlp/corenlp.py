@@ -195,7 +195,7 @@ class StanfordCoreNLP(object):
         
         # show progress bar while loading the models
         widgets = ['Loading Models: ', Fraction()]
-        pbar = ProgressBar(widgets=widgets, maxval=5, force_update=True).start()
+        pbar = ProgressBar(widgets=widgets, maxval=4, force_update=True).start()
         self.corenlp.expect("done.", timeout=20) # Load pos tagger model (~5sec)
         pbar.update(1)
         self.corenlp.expect("done.", timeout=200) # Load NER-all classifier (~33sec)
@@ -204,8 +204,8 @@ class StanfordCoreNLP(object):
         pbar.update(3)
         self.corenlp.expect("done.", timeout=600) # Load CoNLL classifier (~50sec)
         pbar.update(4)
-        self.corenlp.expect("done.", timeout=200) # Loading PCFG (~3sec)
-        pbar.update(5)
+#        self.corenlp.expect("done.", timeout=200) # Loading PCFG (~3sec)
+#        pbar.update(5)
         self.corenlp.expect("Entering interactive shell.")
         pbar.finish()
     
@@ -300,7 +300,7 @@ class StanfordCoreNLP(object):
         """
         
         instances = []
-        prp_filename = sent_filename.rsplit('.',1)[0]+'.prp' # preprocessed file
+        prp_filename = sent_filename+'.prp' # preprocessed file
         #tok_filename = sent_filename + '.tok' # tokenized sentences
         if os.path.exists(prp_filename):
             #output_tok = open(tok_filename,'w')
