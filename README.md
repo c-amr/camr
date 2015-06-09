@@ -5,7 +5,7 @@ A Transition-based parser for [Abstract Meaning Representation](http://amr.isi.e
 
 Reference:
 
-- Chuan Wang, Nianwen Xue, and Sameer Pradhan.2015. [A transition-based algorithm for amr parsing](http://aclweb.org/anthology/N/N15/N15-1040.pdf). In Proceedings of the 2015 Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies, pages 366–375, Denver, Colorado, May–June. Association for Computational Linguistics.
+- Chuan Wang, Nianwen Xue, and Sameer Pradhan.2015. [A transition-based algorithm for AMR parsing](http://aclweb.org/anthology/N/N15/N15-1040.pdf). In Proceedings of the 2015 Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies, pages 366–375, Denver, Colorado, May–June. Association for Computational Linguistics.
 
 ```
 @InProceedings{wang-xue-pradhan:2015:NAACL-HLT,
