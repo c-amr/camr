@@ -5,7 +5,7 @@ A Transition-based parser for [Abstract Meaning Representation](http://amr.isi.e
 
 Reference:
 
-- Chuan Wang, Nianwen Xue, and Sameer Pradhan.2015. [A transition-based algorithm for AMR parsing](http://aclweb.org/anthology/N/N15/N15-1040.pdf). In Proceedings of the 2015 Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies, pages 366–375, Denver, Colorado, May–June. Association for Computational Linguistics.
+- Chuan Wang, Nianwen Xue, and Sameer Pradhan.2015. [A transition-based algorithm for amr parsing](http://aclweb.org/anthology/N/N15/N15-1040.pdf). In Proceedings of the 2015 Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies, pages 366–375, Denver, Colorado, May–June. Association for Computational Linguistics.
 
 ```
 @InProceedings{wang-xue-pradhan:2015:NAACL-HLT,
@@ -27,12 +27,12 @@ First download the project:
       
       git clone https://github.com/Juicechuan/AMRParsing.git
 
-Here we use a modified version of the [Stanford CoreNLP python wrapper](https://github.com/dasmith/stanford-corenlp-python), [Charniak Parser]() and [Stanford CoreNLP toolkit](http://nlp.stanford.edu/software/corenlp.shtml).
+Here we use a modified version of the [Stanford CoreNLP python wrapper](https://github.com/dasmith/stanford-corenlp-python), [Charniak Parser](https://github.com/BLLIP/bllip-parser) and [Stanford CoreNLP toolkit](http://nlp.stanford.edu/software/corenlp.shtml).
 To setup dependencies, run the following script:
    
       ./scripts/config.sh
 
-
+>**Note:** For Mac users, there are some problems when installing the Charniak Parser python module bllipparser. We recommend to use Linux system in order to utilize the Charniak Parser.
 
 # Parsing with Pre-trained Model
 The input data format for parsing should be raw document with one sentence per line. 
