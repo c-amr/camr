@@ -32,7 +32,7 @@ To setup dependencies, run the following script:
    
       ./scripts/config.sh
 
->**Note:** For Mac users, there are some problems when installing the Charniak Parser python module bllipparser. We recommend to use Linux system in order to utilize the Charniak Parser.
+>**Note:** For Mac users, there are some problems when installing the Charniak Parser python module bllipparser. We recommend to use Linux system in order to utilize the Charniak Parser. Also you may need [swig](http://www.swig.org/) to successfully install bllipparser.
 
 # Parsing with Pre-trained Model
 The input data format for parsing should be raw document with one sentence per line. 
