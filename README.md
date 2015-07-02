@@ -47,9 +47,14 @@ Download the model trained on training set of LDC2013E117 newswire section [here
       python amr_parsing.py -m parse --model [model_file] [input_sentence_file] 2>log/error.log
 
 This will give your the parsed AMR file(.parsed) in the same directory of your input sentence file. 
+##Alignment
+If you have annotated AMR file, you could first run the preprocessing step:
+	
+	python amr_parsing.py -m preprocess --amrfmt [input_amr_file]
 
-> **Note:** We use [JAMR](https://github.com/jflanigan/jamr) to get the alignment between sentence and its AMR annotation. You need to download and set up JAMR, then run the following script to get the aligned amr file:
-```
-      ./scripts/jamr_align.sh [input_file]
-```
+This will generate a tokenized AMR file (.amr.tok) (which has :tok tag in the comments). Then you can run the following command to get the aligned AMR file(.aligned)
 
+	./scripts/jamr_align.sh [input_amr_tok_file]
+
+
+> **Note:** We use [JAMR](https://github.com/jflanigan/jamr) to get the alignment between sentence and its AMR annotation. You need to download and set up JAMR, then run the following script to get the aligned AMR file:
