@@ -57,4 +57,4 @@ This will generate a tokenized AMR file (.amr.tok) (which has :tok tag in the co
 	./scripts/jamr_align.sh [input_amr_tok_file]
 
 
-> **Note:** We use [JAMR](https://github.com/jflanigan/jamr) to get the alignment between sentence and its AMR annotation. You need to download and set up JAMR, then run the following script to get the aligned AMR file:
+> **Note:** We use [JAMR](https://github.com/jflanigan/jamr) to get the alignment between sentence and its AMR annotation. You need to download and set up JAMR.
