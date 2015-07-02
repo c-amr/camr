@@ -239,7 +239,7 @@ def preprocess(input_file,START_SNLP=True,INPUT_AMR=True):
     if INPUT_AMR: # the input file is amr annotation
         
         amr_file = input_file
-        aligned_amr_file = amr_file + '.aligned'
+        aligned_amr_file = amr_file + '.amr.tok.aligned'
         if os.path.exists(aligned_amr_file):
             comments,amr_strings = readAMR(aligned_amr_file)
         else:
@@ -261,7 +261,7 @@ def preprocess(input_file,START_SNLP=True,INPUT_AMR=True):
         if not os.path.exists(tok_sent_filename):
             _write_tok_sentences(tok_sent_filename,instances)
 
-        tok_amr_filename = amr_file + '.tok'
+        tok_amr_filename = amr_file + '.amr.tok'
         if not os.path.exists(tok_amr_filename): # write tokenized amr file
             _write_tok_amr(tok_amr_filename,amr_file,instances)
             
@@ -362,7 +362,7 @@ def preprocess(input_file,START_SNLP=True,INPUT_AMR=True):
         pass
     
     if constants.FLAG_PROP:
-        print >> log, "adding SRL information..."
+        print >> log, "Adding SRL information..."
         prop_filename = tok_sent_filename + '.prop'
         if os.path.exists(prop_filename):
             if constants.FLAG_DEPPARSER == "stdconv+charniak":

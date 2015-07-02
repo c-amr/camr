@@ -141,7 +141,9 @@ def main():
     arg_parser.add_argument('--feat',help='feature template file')
     arg_parser.add_argument('-iter','--iterations',default=1,type=int,help='training iterations')
     arg_parser.add_argument('amr_file',nargs='?',help='amr annotation file/input sentence file for parsing')
+    arg_parser.add_argument('--amrfmt',action='store_true',help='specifying the input file is AMR annotation file')
     arg_parser.add_argument('-e','--eval',nargs=2,help='Error Analysis: give parsed AMR file and gold AMR file')
+    arg_parser.add_argument('--section',choices=['proxy','all'],default='all',help='choose section of the corpus. Only works for LDC2014T12 dataset.')
 
     args = arg_parser.parse_args()
 
@@ -154,7 +156,7 @@ def main():
 
     # using corenlp to preprocess the sentences 
     if args.mode == 'preprocess':
-        instances = preprocess(amr_file,START_SNLP=True,INPUT_AMR=False)
+        instances = preprocess(amr_file,START_SNLP=True,INPUT_AMR=args.amrfmt)
         print "Done preprocessing!"
     # preprocess the JAMR aligned amr
     elif args.mode == 'test_gold_graph':     
@@ -301,8 +303,19 @@ def main():
         print "Incorporate Coref Information: %s"%(constants.FLAG_COREF)
         print "Incorporate SRL Information: %s"%(constants.FLAG_PROP)
         print "Dependency parser used: %s"%(constants.FLAG_DEPPARSER)
-        train_instances = preprocess(amr_file,START_SNLP=False)
+        train_instances = preprocess(amr_file,START_SNLP=False)        
         if args.dev: dev_instances = preprocess(args.dev,START_SNLP=False)
+
+
+        if args.section != 'all':
+            print "Choosing corpus section: %s"%(args.section)
+            tcr = constants.get_corpus_range(args.section,'train')
+            train_instances = train_instances[tcr[0]:tcr[1]]
+            if args.dev:
+                dcr = constants.get_corpus_range(args.section,'dev')
+                dev_instances = dev_instances[dcr[0]:dcr[1]]
+
+        
         feat_template = args.feat if args.feat else None
         model = Model(elog=experiment_log)
         #model.output_feature_generator()
@@ -323,19 +336,24 @@ def main():
             if args.dev:
                 print >> experiment_log ,"Result on develop set:"                
                 _,parsed_amr = parser.parse_corpus_test(dev_instances)
-                write_parsed_amr(parsed_amr,dev_instances,args.dev,str(iter)+'.parsed')
+                write_parsed_amr(parsed_amr,dev_instances,args.dev,args.section+'.'+str(iter)+'.parsed')
 
         print >> experiment_log ,"DONE TRAINING!"
         
     elif args.mode == 'parse': # actual parsing
         test_instances = preprocess(amr_file,START_SNLP=False,INPUT_AMR=False)
+        if args.section != 'all':
+            print "Choosing corpus section: %s"%(args.section)
+            tcr = constants.get_corpus_range(args.section,'test')
+            test_instances = test_instances[tcr[0]:tcr[1]]
+            
         #random.shuffle(test_instances)
         print >> experiment_log, "Loading model: ", args.model 
         model = Model.load_model(args.model)
         parser = Parser(model=model,oracle_type=DET_T2G_ORACLE_ABT,action_type=args.actionset,verbose=args.verbose,elog=experiment_log)
         print >> experiment_log ,"BEGIN PARSING"
         span_graph_pairs,results = parser.parse_corpus_test(test_instances)
-        write_parsed_amr(results,test_instances,amr_file,suffix='parsed')
+        write_parsed_amr(results,test_instances,amr_file,suffix='%s.parsed'%(args.section))
         #write_span_graph(span_graph_pairs,test_instances,amr_file,suffix='spg.50')
         ################
         # for eval     #

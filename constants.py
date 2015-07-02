@@ -204,3 +204,31 @@ def _load_brown_cluster(dir_path,cluster_num=1000):
     return cluster_dict
 
 BROWN_CLUSTER=_load_brown_cluster(DEFAULT_BROWN_CLUSTER)
+
+# given different domain, return range of split corpus #TODO: move this part to config file
+def get_corpus_range(corpus_section,corpus_type):
+    DOMAIN_RANGE_TABLE={ \
+        'train':{
+            'proxy':(0,6603),
+            'bolt':(6603,7664),
+            'dfa':(7664,9367),
+            'mt09sdf':(9367,9571),
+            'xinhua':(9571,10312)
+        },
+        'dev':{
+            'proxy':(0,826),
+            'bolt':(826,959),
+            'consensus':(959,1059),
+            'dfa':(1059,1269),
+            'xinhua':(1269,1368)
+        },
+        'test':{
+            'proxy':(0,823),
+            'bolt':(823,956),
+            'consensus':(956,1056),
+            'dfa':(1056,1285),
+            'xinhua':(1285,1371)
+        }
+    }
+
+    return DOMAIN_RANGE_TABLE[corpus_type][corpus_section]
