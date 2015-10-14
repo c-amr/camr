@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -63,3 +64,11 @@ smatch*/
 # cache
 *~
 scripts/*~
+=======
+.h
+*~
+#*
+*.o
+*.pyc
+
+>>>>>>> a73cce584874c09b1afeaa357dba99e66a66f169
