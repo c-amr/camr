@@ -44,7 +44,7 @@ def parse_bracketed(s):
         temp["^^^%d^^^" % i] = tag
         s = s.replace(tag, "^^^%d^^^" % i)
     # Load key-value pairs, substituting as necessary
-    for attr, val in re.findall(r"([^=\s]*)=([^=\s]*)", s):
+    for attr, _, val in re.findall(r"([^=\s]*)(\r\n)?=([^=\s]*)", s):
         if val in temp:
             val = temp[val]
         if attr == 'Text':
