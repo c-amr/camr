@@ -22,7 +22,7 @@ Reference:
 ```
 
 - Chuan Wang, Nianwen Xue, and Sameer Pradhan.2015. [Boosting Transition-based AMR Parsing with Refined Actions and
-Auxiliary Analyzers](https://aclweb.org/anthology/P/P15/P15-2141.pdf). In Proceedings of the 53rd Annual Meeting of the Association for Computational Linguistics and the 7th International Joint Conference on Natural Language Processing (Short Papers), pages 857?862, Beijing, China, July 26?31, 2015. Association for Computational Linguistics.
+Auxiliary Analyzers](https://aclweb.org/anthology/P/P15/P15-2141.pdf). In Proceedings of the 53rd Annual Meeting of the Association for Computational Linguistics and the 7th International Joint Conference on Natural Language Processing (Short Papers), pages 857-862, Beijing, China, July 26-31, 2015. Association for Computational Linguistics.
 
 ```
 @InProceedings{wang-xue-pradhan:2015:ACL-IJCNLP,
