@@ -271,14 +271,14 @@ def main():
             n_parsed_total += n_parsed_arc
             n_gold_total += n_gold_arc
             p = n_correct_arc/n_parsed_arc if n_parsed_arc else .0
-            r = n_correct_arc/n_gold_arc if n_parsed_arc else .0
+            r = n_correct_arc/n_gold_arc if n_gold_arc else .0
             indicator = 'PROBLEM!' if p < 0.5 else ''
             if args.verbose > 2: print >> sys.stderr, "Precision: %s Recall: %s  %s\n" % (p,r,indicator)
             n_correct_tag_total +=  n_correct_tag
             n_parsed_tag_total +=  n_parsed_tag
             n_gold_tag_total += n_gold_tag
             p1 = n_correct_tag/n_parsed_tag if n_parsed_tag else .0
-            r1 = n_correct_tag/n_gold_tag if n_parsed_tag else .0
+            r1 = n_correct_tag/n_gold_tag if n_gold_tag else .0
             if args.verbose > 2: print >> sys.stderr,"Tagging Precision:%s Recall:%s" % (p1,r1)
 
             instance.comment['alignments'] += ''.join(' %s-%s|%s'%(idx-1,idx,instance.amr.get_pid(state.A.abt_node_table[idx])) for idx in state.A.abt_node_table if isinstance(idx,int))
