@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 import os,subprocess
+import sys
 
-VERBOSE = True
+VERBOSE = True 
+logs = sys.stdout
 
 class DepParser(object):
     
@@ -30,15 +32,16 @@ class CharniakParser(DepParser):
         print "Begin Charniak parsing ..."
         parsed_filename = sent_filename+'.charniak.parse'
         parsed_trees = ''
-        with open(sent_filename,'r') as f:
+        lineno = 0
+        with open(sent_filename,'r') as f, open(parsed_filename,'w') as of:
             for l in f:
-                parsed_trees += rrp.simple_parse(l.strip().split())
+                lineno += 1
+                print >> logs, 'lineno %s, %s'% (lineno, l)
+                parsed_trees = rrp.simple_parse(l.strip().split())
                 parsed_trees += '\n'
+                of.write(parsed_trees)
 
-        with open(parsed_filename,'w') as of:
-            of.write(parsed_trees)
-                
-
+        
         # convert parse tree to dependency tree
         print "Convert Charniak parse tree to Stanford Dependency tree ..."
         subprocess.call('./scripts/stdconvert.sh '+parsed_filename,shell=True)
@@ -125,3 +128,9 @@ class MateDepParser(DepParser):
         subprocess.call(start_depparser,shell=True)
         dep_result = open(sent_filename+'.'+extension,'r').read()
         return dep_result
+
+
+if __name__ == "__main__":
+    parser = CharniakParser()
+    sent_fn = 'data/LDC2015E86_DEFT_Phase_2_AMR_Annotation_R1/data/amrs/split/training/preprocess/deft-p2-amr-r1-amrs-training-dfa.txt.sent.tok.part2'
+    parser.parse(sent_fn)

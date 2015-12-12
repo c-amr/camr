@@ -39,6 +39,7 @@ def parse_bracketed(s):
     word = None
     attrs = {}
     temp = {}
+    s = s.replace('\r\n','')
     # Substitute XML tags, to replace them later
     for i, tag in enumerate(re.findall(r"(<[^<>]+>.*<\/[^<>]+>)", s)):
         temp["^^^%d^^^" % i] = tag
@@ -64,7 +65,7 @@ def parse_parser_results(text):
     data = Data()
     
     state = STATE_START
-    for line in re.split("\r\n(?!=)",text):
+    for line in re.split("\r\n(?![^\[]*\])",text):
         line = line.strip()
         if line == 'NLP>':
             break
@@ -301,10 +302,8 @@ class StanfordCoreNLP(object):
         
         instances = []
         prp_filename = sent_filename+'.prp' # preprocessed file
-        #tok_filename = sent_filename + '.tok' # tokenized sentences
         if os.path.exists(prp_filename):
-            #output_tok = open(tok_filename,'w')
-            print 'Read token,lemma,name entity file %s...' % (prp_filename)
+
             prp_result = open(prp_filename,'r').read()
 
             for result in prp_result.split('-'*40)[1:]:                
@@ -313,12 +312,15 @@ class StanfordCoreNLP(object):
                 except Exception, e:
                     if VERBOSE: print traceback.format_exc()
                     raise e
-                #output_tok.write("%s\n" % (' '.join(data.get_tokenized_sent())))
+
                 instances.append(data)
-            #output_tok.close()
+                #if len(instances) == 4291:
+                #    import pdb
+                #    pdb.set_trace()
+
         else:
             output_prp = open(prp_filename,'w')          
-            #output_tok = open(tok_filename,'w')
+
             for i,line in enumerate(open(sent_filename,'r').readlines()):
                 result = self._parse(line)
                 output_prp.write("%s\n%s"%('-'*40,result))
@@ -327,10 +329,10 @@ class StanfordCoreNLP(object):
                 except Exception, e:
                     if VERBOSE: print traceback.format_exc()
                     raise e
-                #output_tok.write("%s\n" % (' '.join(data.get_tokenized_sent())))
+
                 instances.append(data)
             output_prp.close()
-            #output_tok.close()
+
         '''
         if seq_depparsing:
             dep_filename = sent_filename.rsplit('_',1)[0]+'_dep.txt'

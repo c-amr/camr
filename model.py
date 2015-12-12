@@ -200,7 +200,7 @@ class Model():
         self.tag_codebook['ABTTag'] = pruned_abttag_codebook
         
         
-    def _set_class_weight(self,n_class,n_subclass=None,init_feature_dim = 5*10**5):
+    def _set_class_weight(self,n_class,n_subclass=None,init_feature_dim = 10**5):
         
         #if n_rel == None:
         #    n_rel = [1]*n_class
@@ -317,8 +317,8 @@ class Model():
         #print 'weight shape: %s' % (self.avg_weight.shape)
         print >> self.elog,'weight shape: %s' % (','.join(('%s:%s')%(i,w.shape) for i,w in enumerate(self.avg_weight)))
         print >> self.elog,'token to concept table: %s' % (len(self.token_to_concept_table))
-        #weight = self.weight
-        #aux_weight = self.aux_weight
+        weight = self.weight
+        aux_weight = self.aux_weight
         #avg_weight = self.avg_weight
 
         #self.weight = None
@@ -335,11 +335,12 @@ class Model():
                 pickle.dump(self,f,pickle.HIGHEST_PROTOCOL)
         except:
             print >> sys.stderr, 'Saving model error', sys.exc_info()[0]
+            #raise
             pass
 
 
-        #self.weight = weight
-        #self.aux_weight = aux_weight
+        self.weight = weight
+        self.aux_weight = aux_weight
         #self.avg_weight = avg_weight
         
     @staticmethod

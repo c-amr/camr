@@ -212,7 +212,7 @@ def _add_dependency(instances,result,FORMAT="stanford"):
                     m = re.match(r'(?P<lemma>.+)-(?P<index>[^-]+)', l_lemma)
                     l_lemma, l_index = m.group('lemma'), m.group('index')
                     # some string may start with @; change the segmenter
-                    m = re.match(r'(?P<lemma>[^\^]+)(\^(?P<trace>[^-]+))?-(?P<index>[^-]+)', r_lemma)
+                    m = re.match(r'(?P<lemma>[^\^]+|\^(?=-))(\^(?P<trace>[^-]+))?-(?P<index>[^-]+)', r_lemma)
                     try:
                         r_lemma,r_trace, r_index = m.group('lemma'), m.group('trace'), m.group('index')
                     except AttributeError:
@@ -220,8 +220,12 @@ def _add_dependency(instances,result,FORMAT="stanford"):
                         pdb.set_trace()
 
                     if r_index != 'null':
-                        #print >> sys.stderr, line                        
-                        instances[i].addDependency( rel, l_index, r_index )
+                        #print >> sys.stderr, line
+                        try:
+                            instances[i].addDependency( rel, l_index, r_index )
+                        except IndexError:
+                            import pdb
+                            pdb.set_trace()
                     if r_trace is not None:
                         instances[i].addTrace( rel, l_index, r_trace )                      
                 
@@ -245,16 +249,23 @@ def preprocess(input_file,START_SNLP=True,INPUT_AMR=True):
         else:
             comments,amr_strings = readAMR(amr_file)
         sentences = [c['snt'] for c in comments] # here should be 'snt'
+
+        # write sentences(separate per line)
         tmp_sent_filename = amr_file+'.sent'
-        if not os.path.exists(tmp_sent_filename): # write sentences into file
+        if not os.path.exists(tmp_sent_filename): # no cache found
             _write_sentences(tmp_sent_filename,sentences)
 
+        tmp_prp_filename = tmp_sent_filename+'.prp'
 
-        print >> log, "Start Stanford CoreNLP..."
         proc1 = StanfordCoreNLP()
 
         # preprocess 1: tokenization, POS tagging and name entity using Stanford CoreNLP
-        if START_SNLP: proc1.setup()
+
+        if START_SNLP and not os.path.exists(tmp_prp_filename):
+            print >> log, "Start Stanford CoreNLP..."
+            proc1.setup()
+
+        print >> log, 'Read token,lemma,name entity file %s...' % (tmp_prp_filename)            
         instances = proc1.parse(tmp_sent_filename)
 
         tok_sent_filename = tmp_sent_filename+'.tok' # write tokenized sentence file

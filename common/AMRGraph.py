@@ -119,7 +119,7 @@ class AMR(defaultdict):
             ("STRLITERAL",u'"[^"]+"|\u201c[^\u201d]+\u201d'),
             ("LITERAL","'[^\s(),]+"),
             ("INTERROGATIVE","\s(interrogative|imperative|expressive)(?=[\s\)])"),
-            ("QUANTITY","[0-9][0-9Ee^+\-\.,:]*"),
+            ("QUANTITY","[0-9][0-9Ee^+\-\.,:]*(?=[\s\)])"),
             ("IDENTIFIER","[^\s()]+"), #no blank within characters
             ("POLARITY","\s(\-|\+)(?=[\s\)])")
         ] 
@@ -208,7 +208,9 @@ class AMR(defaultdict):
                     else:
                         amr.roots.append(parentnodelabel)
                         state = 0
-                else: raise ParserError, "Unexpected token %s"%(token.encode('utf8'))
+                else:
+                    print amr_string
+                    raise ParserError, "Unexpected token %s"%(token.encode('utf8'))
                 
             elif state == 5:
                 if type == "LPAR":
@@ -457,7 +459,7 @@ class AMR(defaultdict):
         if reentrance:
             self.reentrance_triples.append((parent,relation,reentrance[0]))
 
-    def _add_triple(self, parent, relation, child, warn=sys.stderr):
+    def _add_triple(self, parent, relation, child, warn=None):
         """                                                                                         
         Add a (parent, relation, child) triple to the DAG.                                          
         """

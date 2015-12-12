@@ -142,6 +142,7 @@ def main():
     arg_parser.add_argument('-iter','--iterations',default=1,type=int,help='training iterations')
     arg_parser.add_argument('amr_file',nargs='?',help='amr annotation file/input sentence file for parsing')
     arg_parser.add_argument('--amrfmt',action='store_true',help='specifying the input file is AMR annotation file')
+    arg_parser.add_argument('--smatcheval',action='store_true',help='give evaluation score using smatch')
     arg_parser.add_argument('-e','--eval',nargs=2,help='Error Analysis: give parsed AMR file and gold AMR file')
     arg_parser.add_argument('--section',choices=['proxy','all'],default='all',help='choose section of the corpus. Only works for LDC2014T12 dataset.')
 
@@ -361,7 +362,10 @@ def main():
         #pickle.dump(span_graph_pairs,open('data/eval/%s_spg_pair.pkl'%(amr_file),'wb'),pickle.HIGHEST_PROTOCOL)
         #pickle.dump(test_instances,open('data/eval/%s_instances.pkl'%(amr_file),'wb'),pickle.HIGHEST_PROTOCOL)
         print >> experiment_log ,"DONE PARSING"
-        
+
+        if args.smatcheval:
+            smatch_path = "./smatch_2.0/"
+            
         #plt.hist(results)
         #plt.savefig('result.png')
 

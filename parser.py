@@ -262,11 +262,12 @@ class Parser(object):
                 per_parse_time = round(time.time()-per_start_time,3)
 
                 parsed_amr.append(GraphState.get_parsed_amr(state.A))
-                print >> self.elog, "Done parsing sentence %s" % (state.sentID)
+                if self.verbose > 1: print >> self.elog, "Done parsing sentence %s" % (state.sentID)
                 
             print >> self.elog,"Parsing on %s instances takes %s" % (str(i),datetime.timedelta(seconds=round(time.time()-start_time,0)))
             
         return span_graph_pairs, parsed_amr
+        
     def _parse(self,instance):
         self.perceptron.no_update()
         return (True,Parser.State.init_state(instance,self.verbose))

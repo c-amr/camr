@@ -11,7 +11,8 @@ from util import ispunctuation
 import constants
 from common.AMRGraph import *
 from collections import defaultdict
-
+log=sys.stderr
+debuglevel=1
 
 class SpanNode(object):
 
@@ -141,7 +142,8 @@ class SpanGraph(object):
             hchild_id = span_alignment[amr.roots[0]][0].start
             spgraph.add_edge(0,hchild_id)
         else:
-            print >> sys.stderr, "GraphID:%s WARNING:root %s not aligned!"%(SpanGraph.graphID,amr.node_to_concepts[amr.roots[0]])
+            if debuglevel > 1:
+                print >> log, "GraphID:%s WARNING:root %s not aligned!"%(SpanGraph.graphID,amr.node_to_concepts[amr.roots[0]])
             
             '''
             # make up a fake root that connect all the multi-roots
@@ -235,7 +237,6 @@ class SpanGraph(object):
         varables = [node.node_label for node in amr.dfs()[0]]
         unaligned_vars = set([])
         and_nodes = set([])
-
         
         for h in varables:
             if h not in amr.node_to_concepts and h not in span_alignment:
@@ -266,6 +267,9 @@ class SpanGraph(object):
                 d = ds[0]
                 if d not in amr.node_to_concepts and d not in span_alignment:
                     continue
+                if edge == 'wiki':
+                    continue
+                    
                 dconcept = amr.node_to_concepts[d] if d in amr.node_to_concepts else d
                 if not d in span_alignment: # unaligned concept
                     d_node = SpanNode(d,d,[dconcept],dconcept)
@@ -307,7 +311,8 @@ class SpanGraph(object):
             hchild_id = span_alignment[amr.roots[0]][0].start
             spgraph.add_edge(0,hchild_id)
         else:
-            print >> sys.stderr, "GraphID:%s WARNING:root %s not aligned!"%(SpanGraph.graphID,amr.node_to_concepts[amr.roots[0]])
+            if debuglevel > 1:
+                print >> log, "GraphID:%s WARNING:root %s not aligned!"%(SpanGraph.graphID,amr.node_to_concepts[amr.roots[0]])
             
             '''
             # make up a fake root that connect all the multi-roots

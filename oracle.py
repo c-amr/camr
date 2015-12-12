@@ -175,7 +175,7 @@ class DetOracleABT(Oracle):
                             return {'type':NEXT1},None # violates the attachment constraints
 
                     else:
-                        print >> sys.stderr, "Current child node %s doesn't have parents in gold span graph!"%(currentChildIdx)
+                        if self.verbose > 1: print >> sys.stderr, "Current child node %s doesn't have parents in gold span graph!"%(currentChildIdx)
                         return {'type':NEXT1},None
                         #return {'type':REATTACH,'parent_to_attach':None},None
                 else:
@@ -307,14 +307,14 @@ class DetOracleABT(Oracle):
                             else:
                                 return {'type':NEXT1},None # violates the attachment constraints
                         else:
-                            print >> sys.stderr, "Current child node %s doesn't have parents in gold span graph!"%(currentChildIdx)
+                            if self.verbose > 1: print >> sys.stderr, "Current child node %s doesn't have parents in gold span graph!"%(currentChildIdx)
                             return {'type':NEXT1},None
                 else:
-                    print >> sys.stderr, "Current child node %s should have been deleted!"%(currentChildIdx)
+                    if self.verbose > 1: print >> sys.stderr, "Current child node %s should have been deleted!"%(currentChildIdx)
                     return {'type':NEXT1},None 
             else:
                 # here currentNode.children must be empty
-                if currentNode.children: print >> sys.stderr, "Unaligned node %s has children"%(currentNode.start)
+                if currentNode.children and self.verbose > 1: print >> sys.stderr, "Unaligned node %s has children"%(currentNode.start)
                 # avoid delete name entity; will delete that in further reentrance action
                 #if currentGraph.sent[currentIdx]['ne'] == 'O' or currentGraph.sent[currentIdx]['pos'] in FUNCTION_TAG:
                 return {'type':DELETENODE},None
@@ -361,7 +361,7 @@ class DetOracleSC(Oracle):
                         #result_act_type = {'type':MERGE}
                     if currentIdx in goldChild.children and \
                        currentChildIdx in goldNode.children:
-                        print >> sys.stderr, "Circle detected in gold graph!"
+                        if self.verbose > 1: print >> sys.stderr, "Circle detected in gold graph!"
                         gold_edge = ref_graph.get_edge_label(currentIdx,currentChildIdx)
                         return {'type':NEXT1}, gold_edge # next
                         #result_act_type = {'type':NEXT1}
@@ -529,7 +529,7 @@ class DetOracle(Oracle):
                         #result_act_type = {'type':MERGE}
                     if currentIdx in goldChild.children and \
                        currentChildIdx in goldNode.children:
-                        print >> sys.stderr, "Circle detected in gold graph!"
+                        if self.verbose > 1: print >> sys.stderr, "Circle detected in gold graph!"
                         gold_edge = ref_graph.get_edge_label(currentIdx,currentChildIdx)
                         return {'type':NEXT1}, gold_edge # next
                         #result_act_type = {'type':NEXT1}
