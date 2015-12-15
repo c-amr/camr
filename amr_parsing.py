@@ -338,11 +338,20 @@ def main():
                 print >> experiment_log ,"Result on develop set:"                
                 _,parsed_amr = parser.parse_corpus_test(dev_instances)
                 write_parsed_amr(parsed_amr,dev_instances,args.dev,args.section+'.'+str(iter)+'.parsed')
+                if args.smatcheval:
+                    smatch_path = "./smatch_2.0/smatch.py"
+                    python_path = 'python'
+                    options = '--pr -f'
+                    parsed_filename = args.dev+'.'+args.section+'.'+str(iter)+'.parsed'
+                    command = '%s %s %s %s %s' % (python_path, smatch_path, options, parsed_filename, args.dev)
+                    
+                    print 'Evaluation using command: ' + (command)
+                    print subprocess.check_output(command, stderr=subprocess.STDOUT, shell=True)
 
         print >> experiment_log ,"DONE TRAINING!"
         
     elif args.mode == 'parse': # actual parsing
-        test_instances = preprocess(amr_file,START_SNLP=False,INPUT_AMR=False)
+        test_instances = preprocess(amr_file,START_SNLP=False,INPUT_AMR=args.amrfmt)
         if args.section != 'all':
             print "Choosing corpus section: %s"%(args.section)
             tcr = constants.get_corpus_range(args.section,'test')
@@ -362,9 +371,16 @@ def main():
         #pickle.dump(span_graph_pairs,open('data/eval/%s_spg_pair.pkl'%(amr_file),'wb'),pickle.HIGHEST_PROTOCOL)
         #pickle.dump(test_instances,open('data/eval/%s_instances.pkl'%(amr_file),'wb'),pickle.HIGHEST_PROTOCOL)
         print >> experiment_log ,"DONE PARSING"
-
         if args.smatcheval:
-            smatch_path = "./smatch_2.0/"
+            smatch_path = "./smatch_2.0/smatch.py"
+            python_path = 'python'
+            options = '--pr -f'
+            parsed_filename = amr_file+'.'+args.section+'.parsed'
+            command = '%s %s %s %s %s' % (python_path,smatch_path,options,parsed_filename, amr_file)
+                    
+            print 'Evaluation using command: ' + (command)
+            print subprocess.check_output(command, stderr=subprocess.STDOUT, shell=True)
+
             
         #plt.hist(results)
         #plt.savefig('result.png')

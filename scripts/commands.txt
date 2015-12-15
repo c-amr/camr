@@ -1,0 +1,1 @@
+sed 's/:wiki -\|:wiki "[^":]*"//' data/semeval/dev.txt > data/semeval/dev.txt.nowiki
