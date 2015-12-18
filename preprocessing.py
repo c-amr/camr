@@ -48,6 +48,35 @@ def readAMR(amrfile_path):
 
     return (comment_list,amr_list)
 
+def readAMREval(eval_file_path):
+    '''
+    read in semeval evaluation format (without amr)
+    '''
+    eval_file = codecs.open(eval_file_path,'r',encoding='macroman')
+    comment_list = []
+    comment = OrderedDict()
+    #amr_list = []
+    #amr_string = ''
+
+    for line in eval_file.readlines():
+        if line.startswith('#'):
+            for m in re.finditer("::([^:\s]+)\s(((?!::).)*)",line):
+                #print m.group(1),m.group(2)
+                comment[m.group(1)] = m.group(2)
+        elif not line.strip():
+            if comment:
+                comment_list.append(comment)
+                comment = OrderedDict()
+        else:
+            raise Exception('Invalid eval file format!')
+
+    if comment:
+        comment_list.append(comment)
+
+    eval_file.close()
+
+    return comment_list
+
 def _write_sentences(file_path,sentences):
     """
     write out the sentences to file
@@ -234,13 +263,13 @@ def _add_dependency(instances,result,FORMAT="stanford"):
     else:
         raise ValueError("Unknown dependency format!")
 
-def preprocess(input_file,START_SNLP=True,INPUT_AMR=True):
+def preprocess(input_file,START_SNLP=True,INPUT_AMR='amr'):
     '''nasty function'''
     tmp_sent_filename = None
     instances = None
     tok_sent_filename = None
     
-    if INPUT_AMR: # the input file is amr annotation
+    if INPUT_AMR == 'amr': # the input file is amr annotation
         
         amr_file = input_file
         aligned_amr_file = amr_file + '.amr.tok.aligned'
@@ -277,7 +306,7 @@ def preprocess(input_file,START_SNLP=True,INPUT_AMR=True):
             _write_tok_amr(tok_amr_filename,amr_file,instances)
             
         SpanGraph.graphID = 0
-        for i in range(len(instances)):
+        for i in xrange(len(instances)):
 
             amr = AMR.parse_string(amr_strings[i])
             if 'alignments' in comments[i]:
@@ -290,16 +319,55 @@ def preprocess(input_file,START_SNLP=True,INPUT_AMR=True):
                 instances[i].addAMR(amr)
                 instances[i].addGoldGraph(ggraph)
 
-    else:
-        # input file is sentence
-        tmp_sent_filename = input_file 
+    elif INPUT_AMR == 'amreval':
+        eval_file = input_file
+        comments = readAMREval(eval_file)
+        sentences = [c['snt'] for c in comments] 
 
-        print >> log, "Start Stanford CoreNLP ..."
+        # write sentences(separate per line)
+        tmp_sent_filename = eval_file+'.sent'
+        if not os.path.exists(tmp_sent_filename): # no cache found
+            _write_sentences(tmp_sent_filename,sentences)
+
+        tmp_prp_filename = tmp_sent_filename+'.prp'
+
         proc1 = StanfordCoreNLP()
 
         # preprocess 1: tokenization, POS tagging and name entity using Stanford CoreNLP
-        if START_SNLP: proc1.setup()
-        instances = proc1.parse(tmp_sent_filename)
+        if START_SNLP and not os.path.exists(tmp_prp_filename):
+            print >> log, "Start Stanford CoreNLP ..."
+            proc1.setup()
+            instances = proc1.parse(tmp_sent_filename)
+        elif os.path.exists(tmp_prp_filename): # found cache file
+            print >> log, 'Read token,lemma,name entity file %s...' % (tmp_prp_filename)
+            instances = proc1.parse(tmp_sent_filename)
+        else:
+            raise Exception('No cache file %s has been found. set START_SNLP=True to start corenlp.' % (tmp_prp_filename))
+            
+        tok_sent_filename = tmp_sent_filename+'.tok' # write tokenized sentence file
+        if not os.path.exists(tok_sent_filename):
+            _write_tok_sentences(tok_sent_filename,instances)
+            
+        for i in xrange(len(instances)):
+            instances[i].addComment(comments[i])
+        
+    else:        # input file is sentence
+        tmp_sent_filename = input_file 
+        tmp_prp_filename = tmp_sent_filename+'.prp'
+        
+        proc1 = StanfordCoreNLP()
+
+        # preprocess 1: tokenization, POS tagging and name entity using Stanford CoreNLP
+        if START_SNLP and not os.path.exists(tmp_prp_filename):
+            print >> log, "Start Stanford CoreNLP ..."
+            proc1.setup()
+            instances = proc1.parse(tmp_sent_filename)
+        elif os.path.exists(tmp_prp_filename): # found cache file
+            print >> log, 'Read token,lemma,name entity file %s...' % (tmp_prp_filename)
+            instances = proc1.parse(tmp_sent_filename)
+        else:
+            raise Exception('No cache file %s has been found. set START_SNLP=True to start corenlp.' % (tmp_prp_filename))
+        
 
         tok_sent_filename = tmp_sent_filename+'.tok' # write tokenized sentence file
         if not os.path.exists(tok_sent_filename):

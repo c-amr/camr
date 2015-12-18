@@ -65,10 +65,10 @@ def write_parsed_amr(parsed_amr,instances,amr_file,suffix='parsed',hand_alignmen
     for pamr,inst in zip(parsed_amr,instances):
         if inst.comment:
             output.write('# %s\n' % (' '.join(('::%s %s')%(k,v) for k,v in inst.comment.items() if k in ['id','date','snt-type','annotator'])))
-            output.write('# %s\n' % (' '.join(('::%s %s')%(k,v) for k,v in inst.comment.items() if k in ['tok'])))
+            output.write('# %s\n' % (' '.join(('::%s %s')%(k,v) for k,v in inst.comment.items() if k in ['snt','tok'])))
             if hand_alignments:
                 output.write('# ::alignments %s ::gold\n' % (hand_alignments[inst.comment['id']]))
-            output.write('# %s\n' % (' '.join(('::%s %s')%(k,v) for k,v in inst.comment.items() if k in ['alignments'])))
+            #output.write('# %s\n' % (' '.join(('::%s %s')%(k,v) for k,v in inst.comment.items() if k in ['alignments'])))
         else:
             output.write('# ::id %s\n'%(inst.sentID))
             output.write('# ::snt %s\n'%(inst.text))
@@ -141,7 +141,7 @@ def main():
     arg_parser.add_argument('--feat',help='feature template file')
     arg_parser.add_argument('-iter','--iterations',default=1,type=int,help='training iterations')
     arg_parser.add_argument('amr_file',nargs='?',help='amr annotation file/input sentence file for parsing')
-    arg_parser.add_argument('--amrfmt',action='store_true',help='specifying the input file is AMR annotation file')
+    arg_parser.add_argument('--amrfmt',choices=['sent','amr','amreval'],default='amr',help='specifying the input file format')
     arg_parser.add_argument('--smatcheval',action='store_true',help='give evaluation score using smatch')
     arg_parser.add_argument('-e','--eval',nargs=2,help='Error Analysis: give parsed AMR file and gold AMR file')
     arg_parser.add_argument('--section',choices=['proxy','all'],default='all',help='choose section of the corpus. Only works for LDC2014T12 dataset.')
