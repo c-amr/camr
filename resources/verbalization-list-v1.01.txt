@@ -1,0 +1,557 @@
+# Built by Ulf Hermjakob, USC/ISI - June 2, 2015
+DO-NOT-VERBALIZE captor TO person :ARG0-of capture-01
+DO-NOT-VERBALIZE carrier TO ship :ARG0-of carry-01
+DO-NOT-VERBALIZE chairman TO person :ARG0-of chair-01
+DO-NOT-VERBALIZE commander TO person :ARG0-of command-02
+DO-NOT-VERBALIZE container TO product :ARG0-of contain-01
+DO-NOT-VERBALIZE contractor TO person :ARG0-of contract-02
+DO-NOT-VERBALIZE correspondent TO person :ARG0-of correspond-01
+DO-NOT-VERBALIZE dictator TO person :ARG0-of dictate-01
+DO-NOT-VERBALIZE director TO person :ARG0-of direct-01
+DO-NOT-VERBALIZE editor TO person :ARG0-of edit-01
+DO-NOT-VERBALIZE father TO person :ARG0-of father-01
+DO-NOT-VERBALIZE governor TO person :ARG0-of govern-01
+DO-NOT-VERBALIZE governors TO person :ARG0-of govern-01
+DO-NOT-VERBALIZE helicopter TO aircraft :ARG1-of helicopter-01
+DO-NOT-VERBALIZE information TO thing :ARG2-of inform-01
+DO-NOT-VERBALIZE militant TO person :ARG0-of militate-01
+DO-NOT-VERBALIZE mother TO person :ARG0-of mother-01
+DO-NOT-VERBALIZE president TO person :ARG0-of preside-01
+DO-NOT-VERBALIZE professor TO person :ARG0-of profess-01
+DO-NOT-VERBALIZE signatory TO country :ARG0-of sign-01
+DO-NOT-VERBALIZE terrorist TO person :ARG0-of terrorize-01
+DO-NOT-VERBALIZE treasurer TO person :ARG0-of treasure-01
+DO-NOT-VERBALIZE burglary TO burglarize-01
+DO-NOT-VERBALIZE concept TO conceive-01
+DO-NOT-VERBALIZE conference TO confer-01
+DO-NOT-VERBALIZE confidence TO confide-01
+DO-NOT-VERBALIZE delegation TO delegate-01
+DO-NOT-VERBALIZE dinner TO dine-01
+DO-NOT-VERBALIZE freedom TO free-01
+DO-NOT-VERBALIZE harmony TO harmonize-01
+DO-NOT-VERBALIZE hospital TO hospitalize-01
+DO-NOT-VERBALIZE propaganda TO propagandize-01
+DO-NOT-VERBALIZE revolution TO revolt-01
+DO-NOT-VERBALIZE revolutionary TO revolt-01
+DO-NOT-VERBALIZE stability TO stabilize-01
+DO-NOT-VERBALIZE surveillance TO survey-01
+DO-NOT-VERBALIZE terrorism TO terrorize-01
+DO-NOT-VERBALIZE useful TO use-01
+MAYBE-VERBALIZE relationship TO relate-01
+DO-NOT-VERBALIZE active TO act-02
+DO-NOT-VERBALIZE deaf TO deafen-01
+DO-NOT-VERBALIZE deep TO deepen-01
+DO-NOT-VERBALIZE effective TO effect-01
+DO-NOT-VERBALIZE favorable TO favor-01
+DO-NOT-VERBALIZE financial TO finance-01
+DO-NOT-VERBALIZE financial TO finance-02
+DO-NOT-VERBALIZE glad TO gladden-01
+DO-NOT-VERBALIZE hard TO harden-01
+DO-NOT-VERBALIZE hopeful TO hope-01 # provide frame for hopeful
+DO-NOT-VERBALIZE important TO import-01
+DO-NOT-VERBALIZE legal TO legalize-01
+DO-NOT-VERBALIZE liquid TO liquefy-01
+DO-NOT-VERBALIZE modern TO modernize-01
+DO-NOT-VERBALIZE popular TO popularize-01
+DO-NOT-VERBALIZE ripe TO ripen-01
+DO-NOT-VERBALIZE sad TO sadden-01
+DO-NOT-VERBALIZE scandalous TO scandalize-01
+DO-NOT-VERBALIZE simple TO simplify-01
+DO-NOT-VERBALIZE soft TO soften-01
+DO-NOT-VERBALIZE specific TO specify-01
+DO-NOT-VERBALIZE speedy TO speed-01
+DO-NOT-VERBALIZE stable TO stabilize-01
+DO-NOT-VERBALIZE suspicious TO suspect-01
+DO-NOT-VERBALIZE white TO whiten-01
+DO-NOT-VERBALIZE wide TO widen-01
+DO-NOT-VERBALIZE actively TO act-02
+DO-NOT-VERBALIZE effectively TO effect-01
+DO-NOT-VERBALIZE namely TO name-01
+DO-NOT-VERBALIZE specifically TO specify-01
+VERBALIZE abusive TO abuse-01
+VERBALIZE acceptable TO accept-01
+VERBALIZE accumulative TO accumulate-01
+VERBALIZE accumulatively TO accumulate-01
+MAYBE-VERBALIZE activity TO act-02
+VERBALIZE administrative TO administrate-01
+VERBALIZE advisory TO advise-01
+VERBALIZE afraid TO fear-01
+VERBALIZE alive TO live-01
+VERBALIZE anti TO oppose-01
+VERBALIZE anti TO counter-01
+VERBALIZE anti TO destroy-01
+VERBALIZE asleep TO sleep-01
+VERBALIZE attractive TO attract-01
+VERBALIZE aware TO realize-01
+VERBALIZE beneficial TO benefit-01
+VERBALIZE coercive TO coerce-01
+VERBALIZE commendable TO commend-01
+VERBALIZE comparative TO compare-01
+VERBALIZE comparatively TO compare-01
+VERBALIZE competitive TO compete-01
+VERBALIZE compliant TO comply-01
+VERBALIZE compulsory TO compel-01
+VERBALIZE consequently TO cause-01
+VERBALIZE continual TO continue-01
+VERBALIZE continuous TO continue-01
+VERBALIZE cooperative TO cooperate-01
+VERBALIZE dead TO die-01
+VERBALIZE dead TO kill-01
+VERBALIZE deadly TO kill-01
+VERBALIZE destructive TO destroy-01
+VERBALIZE detestable TO detest-01
+VERBALIZE different TO differ-02
+VERBALIZE discriminatory TO discriminate-02
+VERBALIZE disgraceful TO disgrace-01
+VERBALIZE disputable TO dispute-01
+VERBALIZE dominant TO dominate-01
+VERBALIZE educational TO educate-01
+VERBALIZE eligible TO qualify-02
+VERBALIZE emphatically TO emphasize-01
+VERBALIZE expectantly TO expect-01
+VERBALIZE exploratory TO explore-01
+VERBALIZE fearful TO fear-01
+VERBALIZE forceful TO force-01
+VERBALIZE foreseeable TO foresee-01
+VERBALIZE governmental TO government-organization :ARG0-of govern-01
+VERBALIZE hallucinatory TO hallucinate-01
+VERBALIZE hungry TO hunger-01
+VERBALIZE imaginable TO imagine-01
+VERBALIZE impressive TO impress-01
+VERBALIZE inducible TO induce-01
+VERBALIZE inflammatory TO inflame-01
+VERBALIZE innovative TO innovate-01
+VERBALIZE intrigueing TO intrigue-01
+VERBALIZE investigative TO investigate-01
+VERBALIZE justifiable TO justify-01
+VERBALIZE legislative TO legislate-01
+VERBALIZE measurable TO measure-01
+VERBALIZE meritorious TO merit-01
+VERBALIZE migratory TO migrate-01
+VERBALIZE observational TO observe-01
+VERBALIZE operational TO operate-01
+VERBALIZE painful TO pain-01
+VERBALIZE painfully TO pain-01
+VERBALIZE peacekeeping TO keep-01 :ARG1 peace
+VERBALIZE precursory TO precede-01
+VERBALIZE preferential TO prefer-01
+VERBALIZE preparatory TO prepare-02
+VERBALIZE presumably TO presume-02
+VERBALIZE prevalent TO prevail-02
+MAYBE-VERBALIZE pro TO favor-01
+VERBALIZE proud TO pride-01
+VERBALIZE prosperous TO prosper-01
+VERBALIZE protective TO protect-01
+VERBALIZE punishable TO punish-01
+VERBALIZE putative TO think-01
+VERBALIZE rebellious TO rebel-01
+VERBALIZE rebuttal TO rebut-01
+VERBALIZE regulatory TO regulate-01
+VERBALIZE repeatedly TO repeat-01
+VERBALIZE repressive TO repress-01
+VERBALIZE resentful TO resent-01
+VERBALIZE respectful TO respect-01
+VERBALIZE rusty TO rust-01
+VERBALIZE seemingly TO seem-01
+VERBALIZE similar TO resemble-01
+VERBALIZE similarity TO resemble-01
+VERBALIZE stagnant TO stagnate-01
+VERBALIZE successful TO succeed-01
+VERBALIZE sufficient TO suffice-01
+VERBALIZE surprisingly TO surprise-01
+VERBALIZE taxable TO tax-01
+VERBALIZE thirsty TO thirst-01
+VERBALIZE traceable TO trace-02
+VERBALIZE transferrable TO transfer-01
+VERBALIZE unbiased TO bias-01 :polarity -
+VERBALIZE unburdened TO burden-01 :polarity -
+VERBALIZE uncensored TO censor-01 :polarity -
+VERBALIZE undecided TO decide-01 :polarity -
+VERBALIZE understandable TO understand-01
+VERBALIZE unedited TO edit-01 :polarity -
+VERBALIZE unexplored TO explore-01 :polarity -
+VERBALIZE unforeseen TO foresee-01 :polarity -
+VERBALIZE unfulfilled TO fulfill-01 :polarity -
+VERBALIZE unhindered TO hinder-01 :polarity -
+VERBALIZE unimpeded TO impede-01 :polarity -
+VERBALIZE unmaintained TO maintain-01 :polarity -
+VERBALIZE unmodified TO modify-01 :polarity -
+VERBALIZE unnamed TO name-01 :polarity -
+VERBALIZE unrealized TO realize-02 :polarity -
+VERBALIZE unrelenting TO relent-01 :polarity -
+VERBALIZE unsolved TO solve-01 :polarity -
+VERBALIZE unspecified TO specify-01 :polarity -
+VERBALIZE unsurpassed TO surpass-01 :polarity -
+VERBALIZE unswayed TO sway-02 :polarity -
+VERBALIZE voluntary TO volunteer-01
+VERBALIZE willing TO will-02
+VERBALIZE wishful TO wish-01
+VERBALIZE continually TO continue-01
+VERBALIZE increasingly TO increase-01
+VERBALIZE overwhelmingly TO overwhelm-01
+VERBALIZE reportedly TO report-01
+VERBALIZE abrogation TO abrogate-01
+VERBALIZE absolution TO absolve-01
+VERBALIZE abstentia TO absent-01
+VERBALIZE acetylation TO acetylate-01
+VERBALIZE ad TO advertise-01
+VERBALIZE adherence TO adhere-02
+VERBALIZE administration TO administrate-01
+VERBALIZE amination TO aminate-01
+VERBALIZE apparition TO appear-01
+VERBALIZE approval TO approve-01
+VERBALIZE acquittal TO acquit-01
+VERBALIZE annoyance TO annoy-01
+MAYBE-VERBALIZE apparent TO appear-02
+MAYBE-VERBALIZE apprehension TO apprehend-01
+VERBALIZE aspiration TO aspire-01
+VERBALIZE baptism TO baptize-01
+VERBALIZE behavior TO behave-01
+VERBALIZE betrayal TO betray-01
+VERBALIZE blessing TO bless-01
+VERBALIZE blockage TO block-01
+VERBALIZE bombing TO bomb-01
+VERBALIZE breakaway TO break-14
+VERBALIZE breakdown TO break-12
+VERBALIZE breakup TO break-08
+VERBALIZE coexistence TO coexist-01
+VERBALIZE competition TO compete-01
+VERBALIZE construction TO construct-01
+VERBALIZE conversion TO convert-01
+VERBALIZE cooperation TO cooperate-01
+VERBALIZE crackdown TO crack-06
+VERBALIZE creation TO create-01
+VERBALIZE deacetylation TO deacetylate-01
+VERBALIZE deceit TO deceive-01
+VERBALIZE decryption TO decrypt-00
+MAYBE-VERBALIZE defence TO defend-01
+MAYBE-VERBALIZE defense TO defend-01
+VERBALIZE demethylation TO demethylate-01
+VERBALIZE dependence TO depend-01
+VERBALIZE dependency TO depend-01
+VERBALIZE dephosphorylation TO dephosphorylate-01
+VERBALIZE descent TO descend-01
+VERBALIZE desperation TO despair-01
+VERBALIZE destruction TO destroy-01
+VERBALIZE detention TO detain-01
+VERBALIZE devaluation TO devalue-01
+VERBALIZE development TO develop-01
+VERBALIZE development TO develop-02
+VERBALIZE dimerization TO dimerize-00
+VERBALIZE disarmament TO disarm-01
+VERBALIZE dominance TO dominate-01
+VERBALIZE downregulation TO downregulate-01
+VERBALIZE dysregulation TO dysregulate-01
+VERBALIZE dysregulation TO regulate-01
+VERBALIZE exclamation TO exclaim-01
+VERBALIZE election TO elect-01
+VERBALIZE elimination TO eliminate-01
+VERBALIZE encryption TO encrypt-01
+VERBALIZE espionage TO spy-01
+VERBALIZE expectation TO expect-01
+VERBALIZE failure TO fail-01
+MAYBE-VERBALIZE familiar TO familiarize-01
+VERBALIZE flight TO fly-01
+VERBALIZE flight TO flee-01
+VERBALIZE forgiveness TO forgive-01
+VERBALIZE fraud TO defraud-01
+VERBALIZE globalization TO globalize-01
+VERBALIZE habitation TO inhabit-01
+VERBALIZE hesitancy TO hesitate-01
+VERBALIZE heterodimerization TO heterodimerize-00
+VERBALIZE hijacking TO hijack-01
+VERBALIZE homodimerization TO homodimerize-00
+VERBALIZE hydrolysis TO hydrolyze-01
+VERBALIZE hypomethylation TO methylate-01
+VERBALIZE infection TO infect-01
+VERBALIZE invitation TO invite-01
+VERBALIZE isomerization TO isomerize-01
+VERBALIZE launching TO launch-01
+VERBALIZE layoff TO lay-02
+VERBALIZE liberation TO liberate-01
+VERBALIZE methylation TO methylate-01
+VERBALIZE misunderstanding TO misunderstand-01
+VERBALIZE negligence TO neglect-01
+VERBALIZE opposition TO oppose-01
+VERBALIZE ouster TO oust-01
+VERBALIZE perseverance TO persevere-01
+VERBALIZE phosphorylation TO phosphorylate-01
+VERBALIZE pretense TO pretend-01
+VERBALIZE prosecution TO prosecute-01
+VERBALIZE prosperity TO prosper-01
+VERBALIZE radiance TO radiate-01
+VERBALIZE reactivation TO reactivate-01
+VERBALIZE reconciliation TO reconcile-01
+VERBALIZE reconstruction TO reconstruct-01
+VERBALIZE reelection TO reelect-01
+VERBALIZE regulation TO regulate-01
+VERBALIZE reintegration TO reintegrate-01
+VERBALIZE repression TO repress-01
+VERBALIZE reunification TO re-unify-01
+VERBALIZE reverence TO revere-01
+VERBALIZE robbery TO rob-01
+VERBALIZE starvation TO starve-01
+VERBALIZE subjugation TO subjugate-01
+VERBALIZE subversion TO subvert-01
+VERBALIZE suppression TO suppress-01
+VERBALIZE surveillance TO surveil-01
+VERBALIZE takeover TO take-12
+VERBALIZE theft TO steal-01
+VERBALIZE transaction TO transact-01
+VERBALIZE transcription TO transcribe-01
+VERBALIZE transfection TO transfect-00
+VERBALIZE translocation TO translocate-00
+VERBALIZE ubiquitination TO ubiquitinate-01
+VERBALIZE upregulation TO upregulate-01
+VERBALIZE weaponization TO weaponize-01
+VERBALIZE victory TO win-01
+VERBALIZE vision TO see-01
+VERBALIZE vision TO envision-01
+VERBALIZE capability TO capable-41
+VERBALIZE freedom TO free-41
+VERBALIZE intention TO intent-41
+VERBALIZE responsibility TO responsible-41
+VERBALIZE safety TO safe-41
+VERBALIZE shortage TO short-41
+VERBALIZE abuser TO person :ARG0-of abuse-01
+VERBALIZE activator TO thing :ARG0-of activate-01
+VERBALIZE actor TO person :ARG0-of act-01
+VERBALIZE actress TO person :ARG0-of act-01
+VERBALIZE administration TO government-organization :ARG0-of administrate-01
+VERBALIZE administration TO organization :ARG0-of administrate-01
+VERBALIZE administrator TO person :ARG0-of administrate-01
+VERBALIZE admirer TO person :ARG0-of admire-01
+VERBALIZE advertiser TO company :ARG0-of advertise-01
+VERBALIZE advertiser TO person :ARG0-of advertise-01
+VERBALIZE advisor TO person :ARG0-of advise-01
+VERBALIZE analyst TO person :ARG0-of analyze-01
+VERBALIZE announcer TO person :ARG0-of announce-01
+VERBALIZE applicant TO person :ARG0-of apply-01
+VERBALIZE assailant TO person :ARG0-of assail-01
+VERBALIZE assassin TO person :ARG0-of assassinate-01
+VERBALIZE assistant TO person :ARG0-of assist-01
+VERBALIZE attacker TO person :ARG0-of attack-01
+VERBALIZE attendee TO person :ARG0-of attend-01
+VERBALIZE auditor TO person :ARG0-of audit-01
+VERBALIZE author TO person :ARG0-of author-01
+VERBALIZE baker TO person :ARG0-of bake-01
+VERBALIZE beggar TO person :ARG0-of beg-01
+VERBALIZE believer TO person :ARG0-of believe-01
+VERBALIZE bidder TO person :ARG0-of bid-01
+VERBALIZE bomber TO aircraft :ARG0-of bomb-01
+VERBALIZE booster TO person :ARG0-of boost-01
+VERBALIZE broadcaster TO company :ARG0-of broadcast-01
+VERBALIZE buyer TO person :ARG0-of buy-01
+VERBALIZE campaigner TO person :ARG0-of campaign-01
+VERBALIZE capitulator TO person :ARG0-of capitulate-01
+VERBALIZE coach TO person :ARG0-of coach-01
+VERBALIZE combatant TO person :ARG0-of combat-01
+VERBALIZE competitor TO person :ARG0-of compete-01
+VERBALIZE composer TO person :ARG0-of compose-02
+VERBALIZE commuter TO person :ARG0-of commute-01
+VERBALIZE consultant TO person :ARG0-of consult-01
+VERBALIZE consumer TO person :ARG0-of consume-01
+VERBALIZE contributor TO person :ARG0-of contribute-01
+VERBALIZE controller TO person :ARG0-of control-01
+VERBALIZE creator TO person :ARG0-of create-01
+VERBALIZE dealer TO person :ARG0-of deal-01
+VERBALIZE dealer TO person :ARG0-of deal-02
+VERBALIZE dancer TO person :ARG0-of dance-01
+VERBALIZE defender TO person :ARG0-of defend-01
+VERBALIZE demonstrator TO person :ARG0-of demonstrate-01
+VERBALIZE designer TO person :ARG0-of design-01
+VERBALIZE deterrent TO thing :ARG0-of deter-01
+VERBALIZE detector TO product :ARG0-of detect-01
+VERBALIZE developer TO person :ARG0-of develop-02
+VERBALIZE devotee TO person :ARG0-of devote-01
+VERBALIZE digger TO person :ARG0-of dig-01
+VERBALIZE distributor TO person :ARG0-of distribute-01
+VERBALIZE donor TO person :ARG0-of donate-01
+VERBALIZE drafter TO person :ARG0-of draft-01
+VERBALIZE drinker TO person :ARG0-of drink-01
+VERBALIZE driver TO person :ARG0-of drive-01
+VERBALIZE eater TO person :ARG0-of eat-01
+VERBALIZE employer TO organization :ARG0-of employ-01
+VERBALIZE employer TO company :ARG0-of employ-01
+VERBALIZE employer TO person :ARG0-of employ-01
+VERBALIZE entertainer TO person :ARG0-of entertain-01
+VERBALIZE evaluator TO person :ARG0-of evaluate-01
+VERBALIZE explorer TO person :ARG0-of explore-01
+VERBALIZE extortionist TO person :ARG0-of extort-01
+VERBALIZE farmer TO person :ARG0-of farm-01
+VERBALIZE fertilizer TO thing :ARG0-of fertilize-01
+VERBALIZE fighter TO aircraft :ARG0-of fight-01
+VERBALIZE fighter TO person :ARG0-of fight-01
+VERBALIZE filter TO product :ARG0-of filter-01
+VERBALIZE financer TO person :ARG0-of finance-01
+VERBALIZE financier TO person :ARG0-of finance-01
+VERBALIZE fisherman TO person :ARG0-of fish-01
+VERBALIZE follower TO person :ARG0-of follow-02
+VERBALIZE founder TO person :ARG0-of found-01
+VERBALIZE government TO government-organization :ARG0-of govern-01
+VERBALIZE hacker TO person :ARG0-of hack-04
+VERBALIZE hijacker TO person :ARG0-of hijack-01
+VERBALIZE hitter TO person :ARG0-of hit-01
+VERBALIZE holder TO person :ARG0-of hold-01
+VERBALIZE hugger TO person :ARG0-of hug-01
+VERBALIZE hunter TO person :ARG0-of hunt-01
+VERBALIZE immigrant TO person :ARG0-of immigrate-01
+VERBALIZE incentive TO thing :ARG0-of incentivize-01
+VERBALIZE incinerator TO facility :ARG0-of incinerate-01
+VERBALIZE indicator TO thing :ARG0-of indicate-01
+VERBALIZE infiltrator TO person :ARG0-of infiltrate-01
+VERBALIZE inhabitant TO person :ARG0-of inhabit-01
+VERBALIZE inhibitor TO thing :ARG0-of inhibit-01
+VERBALIZE inspector TO person :ARG0-of inspect-01
+VERBALIZE interpreter TO person :ARG0-of interpret-01
+VERBALIZE investigator TO person :ARG0-of investigate-01
+VERBALIZE investor TO person :ARG0-of invest-01
+VERBALIZE jogger TO person :ARG0-of jog-01
+VERBALIZE judge TO person :ARG0-of judge-01
+VERBALIZE kidnapper TO person :ARG0-of kidnap-01
+VERBALIZE killer TO person :ARG0-of kill-01
+VERBALIZE laborer TO person :ARG0-of labor-01
+VERBALIZE launcher TO product :ARG0-of launch-01
+VERBALIZE lawmaker TO person :ARG0-of legislate-01
+VERBALIZE leader TO person :ARG0-of lead-01
+VERBALIZE leader TO person :ARG0-of lead-02
+VERBALIZE legislator TO person :ARG0-of legislate-01
+VERBALIZE legislature TO government-organization :ARG0-of legislate-01
+VERBALIZE liar TO person :ARG0-of lie-02
+VERBALIZE lobbyist TO person :ARG0-of lobby-01
+VERBALIZE maker TO company :ARG0-of make-01
+VERBALIZE maker TO person :ARG0-of make-01
+VERBALIZE manager TO person :ARG0-of manage-01
+VERBALIZE manufacturer TO company :ARG0-of manufacture-01
+VERBALIZE mediator TO person :ARG0-of mediate-01
+VERBALIZE merchant TO person :ARG0-of merchandise-01
+VERBALIZE migrant TO person :ARG0-of migrate-01
+VERBALIZE murderer TO person :ARG0-of murder-01
+VERBALIZE observer TO person :ARG0-of observe-01
+VERBALIZE offender TO person :ARG0-of offend-01
+VERBALIZE operator TO person :ARG0-of operate-01
+VERBALIZE opponent TO person :ARG0-of oppose-01
+VERBALIZE organizer TO person :ARG0-of organize-01
+VERBALIZE owner TO person :ARG0-of own-01
+VERBALIZE painter TO person :ARG0-of paint-01
+VERBALIZE painter TO person :ARG0-of paint-02
+VERBALIZE participant TO person :ARG0-of participate-01
+VERBALIZE passerby TO person :ARG0-of pass-17
+VERBALIZE performer TO person :ARG0-of perform-01
+VERBALIZE perpetrator TO person :ARG0-of perpetrate-01
+VERBALIZE planner TO person :ARG0-of plan-01
+VERBALIZE player TO person :ARG0-of play-01
+VERBALIZE preacher TO person :ARG0-of preach-01
+VERBALIZE producer TO person :ARG0-of produce-01
+VERBALIZE prosecutor TO person :ARG0-of prosecute-01
+VERBALIZE protester TO person :ARG0-of protest-01
+VERBALIZE provider TO company :ARG0-of provide-01
+VERBALIZE refinery TO facility :ARG0-of refine-01
+VERBALIZE reformer TO person :ARG0-of reform-01
+VERBALIZE publisher TO company :ARG0-of publish-01
+VERBALIZE rapist TO person :ARG0-of rape-01
+VERBALIZE reader TO person :ARG0-of read-01
+VERBALIZE recipient TO thing :ARG0-of receive-01
+VERBALIZE regulator TO organization :ARG0-of regulate-01
+VERBALIZE regulator TO person :ARG0-of regulate-01
+VERBALIZE reporter TO person :ARG0-of report-01
+VERBALIZE representative TO person :ARG0-of represent-01
+VERBALIZE repressor TO protein :ARG0-of repress-01
+VERBALIZE researcher TO person :ARG0-of research-01
+VERBALIZE resident TO person :ARG0-of reside-01
+VERBALIZE robber TO person :ARG0-of rob-01
+VERBALIZE runner TO person :ARG0-of run-02
+VERBALIZE sailor TO person :ARG0-of sail-01
+VERBALIZE seeker TO person :ARG0-of seek-01
+VERBALIZE seller TO person :ARG0-of sell-01
+VERBALIZE servant TO person :ARG0-of serve-01
+VERBALIZE servant TO person :ARG0-of serve-02
+VERBALIZE signatory TO country :ARG0-of sign-02
+VERBALIZE singer TO person :ARG0-of sing-01
+VERBALIZE smoker TO person :ARG0-of smoke-02
+VERBALIZE smuggler TO person :ARG0-of smuggle-01
+VERBALIZE speaker TO person :ARG0-of speak-01
+VERBALIZE specialist TO person :ARG0-of specialize-01
+VERBALIZE speculator TO person :ARG0-of speculate-01
+VERBALIZE spy TO person :ARG0-of spy-01
+VERBALIZE squatter TO person :ARG0-of squat-02
+VERBALIZE strategist TO person :ARG0-of strategize-01
+VERBALIZE striker TO person :ARG0-of strike-01
+VERBALIZE striker TO person :ARG0-of strike-02
+VERBALIZE student TO person :ARG0-of study-01
+VERBALIZE subscriber TO person :ARG0-of subscribe-01
+VERBALIZE sufferer TO person :ARG0-of suffer-01
+VERBALIZE supervisor TO person :ARG0-of supervise-01
+VERBALIZE supplier TO country :ARG0-of supply-01
+VERBALIZE supplier TO company :ARG0-of supply-01
+VERBALIZE supporter TO person :ARG0-of support-01
+VERBALIZE survivor TO person :ARG0-of survive-01
+VERBALIZE teacher TO person :ARG0-of teach-01
+VERBALIZE thief TO person :ARG0-of steal-01
+VERBALIZE tippler TO person :ARG0-of tipple-01
+VERBALIZE thrower TO person :ARG0-of throw-01
+VERBALIZE tourist TO person :ARG0-of tour-01
+VERBALIZE traitor TO person :ARG0-of betray-01
+VERBALIZE trafficker TO person :ARG0-of traffic-01
+VERBALIZE transferor TO person :ARG0-of transfer-01
+VERBALIZE translator TO person :ARG0-of translate-01
+VERBALIZE traveler TO person :ARG0-of travel-01
+VERBALIZE user TO person :ARG0-of use-01
+VERBALIZE vendor TO company :ARG0-of vend-01
+VERBALIZE vendor TO person :ARG0-of vend-01
+VERBALIZE victor TO person :ARG0-of win-01
+VERBALIZE visitor TO person :ARG0-of visit-01
+VERBALIZE voter TO person :ARG0-of vote-01
+VERBALIZE waiver TO thing :ARG0-of waive-01
+VERBALIZE winner TO person :ARG0-of win-01
+VERBALIZE wiper TO thing :ARG0-of wipe-01
+VERBALIZE worker TO person :ARG0-of work-01
+VERBALIZE writer TO person :ARG0-of write-01
+VERBALIZE beekeeper TO person :ARG0-of keep-01 :ARG1 bee
+VERBALIZE filmmaker TO person :ARG0-of make-01 :ARG1 film
+VERBALIZE lamplighter TO person :ARG0-of light-01 :ARG1 lamp
+VERBALIZE landowner TO person :ARG0-of own-01 :ARG1 land
+VERBALIZE peacekeeper TO person :ARG0-of keep-01 :ARG1 peace
+VERBALIZE playwright TO person :ARG0-of write-01 :ARG1 play
+VERBALIZE taxpayer TO person :ARG0-of pay-01 :ARG1 tax
+VERBALIZE watchmaker TO person :ARG0-of make-01 :ARG1 watch
+VERBALIZE bassist TO person :ARG0-of play-01 :ARG2 bass
+VERBALIZE bassoonist TO person :ARG0-of play-01 :ARG2 bassoon
+VERBALIZE cellist TO person :ARG0-of play-01 :ARG2 cello
+VERBALIZE clarinetist TO person :ARG0-of play-01 :ARG2 clarinet
+VERBALIZE drummer TO person :ARG0-of play-01 :ARG2 drum
+VERBALIZE flautist TO person :ARG0-of play-01 :ARG2 flute
+VERBALIZE flutist TO person :ARG0-of play-01 :ARG2 flute
+VERBALIZE hornist TO person :ARG0-of play-01 :ARG2 horn
+VERBALIZE oboist TO person :ARG0-of play-01 :ARG2 oboe
+VERBALIZE organist TO person :ARG0-of play-01 :ARG2 organ
+VERBALIZE percussionist TO person :ARG0-of play-01 :ARG2 percussion
+VERBALIZE pianist TO person :ARG0-of play-01 :ARG2 piano
+VERBALIZE trombonist TO person :ARG0-of play-01 :ARG2 trombone
+VERBALIZE trumpeter TO person :ARG0-of play-01 :ARG2 trumpet
+VERBALIZE violinist TO person :ARG0-of play-01 :ARG2 violin
+VERBALIZE violist TO person :ARG0-of play-01 :ARG2 viola
+MAYBE-VERBALIZE defendant TO person :ARG1-of defend-01
+VERBALIZE drawing TO picture :ARG1-of draw-01
+VERBALIZE employee TO person :ARG1-of employ-01
+VERBALIZE expenditure TO thing :ARG1-of expend-01
+VERBALIZE expense TO thing :ARG1-of expend-01
+VERBALIZE hypothesis TO thing :ARG1-of hypothesize-01
+VERBALIZE intent TO thing :ARG1-of intend-01
+VERBALIZE opinion TO thing :ARG1-of opine-01
+VERBALIZE painting TO picture :ARG1-of paint-02
+VERBALIZE prisoner TO person :ARG1-of imprison-01
+VERBALIZE suggestion TO thing :ARG1-of suggest-01
+VERBALIZE surrounding TO location :ARG1-of surround-01
+VERBALIZE symbol TO thing :ARG1-of symbolize-01
+VERBALIZE transferee TO person :ARG1-of transfer-01
+MAYBE-VERBALIZE victim TO person :ARG1-of victimize-01
+VERBALIZE yield TO thing :ARG1-of yield-03
+VERBALIZE blessing TO thing :ARG2-of bless-01
+VERBALIZE evacuee TO person :ARG2-of evacuate-01
+VERBALIZE justification TO thing :ARG2-of justify-01
+VERBALIZE summary TO thing :ARG2-of summarize-01
+MAYBE-VERBALIZE medicine TO thing :ARG2-of medicate-01
+MAYBE-VERBALIZE product TO thing :ARG1-of produce-01 
+MAYBE-VERBALIZE ruler TO person :ARG0-of rule-03
+MAYBE-VERBALIZE starter TO person :ARG0-of start-01

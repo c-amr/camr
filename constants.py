@@ -205,6 +205,34 @@ def _load_brown_cluster(dir_path,cluster_num=1000):
 
 BROWN_CLUSTER=_load_brown_cluster(DEFAULT_BROWN_CLUSTER)
 
+PATH_TO_VERB_LIST = './resources/verbalization-list-v1.01.txt'
+
+def _load_verb_list(path_to_file):
+    verbdict = {}
+    with open(path_to_file,'r') as f:
+        for line in f:
+            if not line.startswith('#') and line.strip():
+                if not line.startswith('DO-NOT-VERBALIZE'):
+                    verb_type, lemma, _, subgraph_str = re.split('\s+',line,3)
+                    subgraph = {}
+                
+                    #if len(l) == 1: 
+                    #else: # have sub-structure
+                    root = re.split('\s+', subgraph_str, 1)[0]
+                    subgraph[root] = {}
+                    for match in re.finditer(':([^\s]+)\s*([^\s:]+)',subgraph_str):
+                        relation = match.group(1)
+                        concept = match.group(2)
+                        subgraph[root][relation] = concept
+                        
+                    verbdict[lemma] = verbdict.get(lemma,[])
+                    verbdict[lemma].append(subgraph)
+
+    return verbdict
+
+VERB_LIST = _load_verb_list(PATH_TO_VERB_LIST)
+                
+
 # given different domain, return range of split corpus #TODO: move this part to config file
 def get_corpus_range(corpus_section,corpus_type):
     DOMAIN_RANGE_TABLE={ \

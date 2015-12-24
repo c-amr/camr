@@ -1034,8 +1034,11 @@ class GraphState(object):
                 pre_abs_id = None
                 rel = None
                 for i,abs_tag in enumerate(node_tag.split('+')):
+                    
                     if i == 0: # node already initialized
-                        if '@' in abs_tag: abs_tag,rel = abs_tag.split('@')
+                        if '@' in abs_tag:
+                            #abs_tag,rel = abs_tag.split('@')
+                            raise Exception('Tag format error')
                         amr.node_to_concepts[variable] = abs_tag
                         pre_abs_id = variable
                     elif abs_tag == '-': # negation
@@ -1045,27 +1048,32 @@ class GraphState(object):
                         amr._add_triple(pre_abs_id,rel,abs_id)
                         pre_abs_id = abs_id
                     else:
-                        abs_id = abs_tag[0].lower()
-                        j = 0
-                        while abs_id in amr:
-                            j+=1
-                            abs_id = abs_id[0]+str(j)
-                            
-                        foo = amr[abs_id]
-                        amr._add_triple(pre_abs_id,rel,abs_id)
-                        if '@' in abs_tag:
-                            abs_tag,rel = abs_tag.split('@')
-                        else:
-                            rel = None
-                        amr.node_to_concepts[abs_id] = abs_tag
-                        #rel = abs_tag
 
-                        pre_abs_id = abs_id
+                        if '@' in abs_tag:
+                            #abs_tag,rel = abs_tag.split('@')
+                            rel, sub_abs_tag = abs_tag.split('@')
+                            
+                            abs_id = sub_abs_tag[0].lower()
+                            j = 0
+                            while abs_id in amr:
+                                j+=1
+                                abs_id = abs_id[0]+str(j)
+
+                            foo = amr[abs_id]
+                            amr._add_triple(pre_abs_id,rel,abs_id)
+                            amr.node_to_concepts[abs_id] = sub_abs_tag
+                            pre_abs_id = abs_id
+                        else:
+                            pass # duplicate concept
+                            #rel = None
+                            #rel = abs_tag
+
+
                 
 
                 last_abs_id = pre_abs_id
-                last_abs_tag = abs_tag
-                if last_abs_tag == '-':
+                last_abs_tag = abs_tag if abs_tag else node_tag.split('+')[i-1]
+                if last_abs_tag == '-' or '@' in abs_tag:
                     return variable,core_var
                 
                 rel_in_span = 'op' if rel is None else rel

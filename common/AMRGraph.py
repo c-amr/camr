@@ -377,13 +377,35 @@ class AMR(defaultdict):
         return amr
         
     def get_variable(self,posID):
-        '''return variable given postition ID'''
+        """return variable given postition ID"""
         reent_var = None
         seq = self.dfs()[0]
         for node in seq:
             if node.seqID == posID:
                 return node.node_label
         return None
+
+    def get_match(self, subgraph):
+        """find the subgraph"""
+        def is_match(dict1, dict2):
+            rel_concept_pairs = []
+            for rel, cpt in dict2.items():
+                rel_concept_pairs.append(rel+'@'+cpt)
+                if not (rel in dict1 and cpt in dict1[rel]):
+                    return None
+            return rel_concept_pairs
+        subroot = subgraph.keys()[0] # sub root's concept
+        concepts_on_the_path = []
+        
+        for v in self.node_to_concepts:
+            if v[0] == subroot[0] and self.node_to_concepts[v] == subroot:
+                concepts_on_the_path = [subroot]
+                rcp = is_match(self[v], subgraph[subroot])
+                if rcp is not None: return v, concepts_on_the_path+rcp                    
+                #for rel, cpt in subgraph[subroot].items():
+                #    if rel in self[v] and cpt in self[v][rel]:
+                #        concepts_on_the_path.append(rel+'@'+cpt)
+        return None, None
     
     def get_pid(self,var):
         seq = self.dfs()[0]
@@ -452,8 +474,6 @@ class AMR(defaultdict):
                 arc_set.add((h,d[0]))
         return arc_set
     '''
-
-
 
     def _add_reentrance(self,parent,relation,reentrance):
         if reentrance:
