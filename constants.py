@@ -9,6 +9,7 @@ from collections import defaultdict
 # TODO using gflag
 FLAG_COREF=False
 FLAG_PROP=False
+FLAG_RNE=False
 FLAG_DEPPARSER='stanford'
 
 # constants

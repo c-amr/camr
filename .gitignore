@@ -63,4 +63,4 @@ smatch*/
 # cache
 *~
 scripts/*~
-
+*.tar.gz

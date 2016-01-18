@@ -65,8 +65,10 @@ def parse_parser_results(text):
     data = Data()
     
     state = STATE_START
-    for line in re.split("\r\n(?![^\[]*\])",text):
+    #for line in re.split("\r\n(?![^\[]*\])",text):
+    for line in re.split("\r\n", text):
         line = line.strip()
+
         if line == 'NLP>':
             break
         if line.startswith("Sentence #"):
@@ -84,6 +86,7 @@ def parse_parser_results(text):
                 raise Exception('Parse error. Could not find "[Text=" in: %s' % line)
             for s in WORD_PATTERN.findall(line):
                 t = parse_bracketed(s)
+                if t[0] == '': continue
                 data.addToken(t[0], t[1][u'CharacterOffsetBegin'], t[1][u'CharacterOffsetEnd'],
                               t[1][u'Lemma'],t[1][u'PartOfSpeech'],t[1][u'NamedEntityTag'])
             state = STATE_TREE
@@ -305,8 +308,13 @@ class StanfordCoreNLP(object):
         if os.path.exists(prp_filename):
 
             prp_result = open(prp_filename,'r').read()
-
-            for result in prp_result.split('-'*40)[1:]:                
+            #i = 0
+            for result in prp_result.split('-'*40)[1:]:
+                #if i == 9932:
+                #    import pdb
+                #    pdb.set_trace()
+                #i += 1
+                
                 try:
                     data = parse_parser_results(result)
                 except Exception, e:

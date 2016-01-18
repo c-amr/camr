@@ -137,6 +137,7 @@ def main():
     arg_parser.add_argument('-dp','--depparser',choices=['stanford','stanfordConvert','stdconv+charniak','clear','mate','turbo'],default='stdconv+charniak',help='choose the dependency parser')
     arg_parser.add_argument('--coref',action='store_true',help='flag to enable coreference information')
     arg_parser.add_argument('--prop',action='store_true',help='flag to enable semantic role labeling information')
+    arg_parser.add_argument('--rne',action='store_true',help='flag to enable rich name entity')
     arg_parser.add_argument('--model',help='specify the model file')
     arg_parser.add_argument('--feat',help='feature template file')
     arg_parser.add_argument('-iter','--iterations',default=1,type=int,help='training iterations')
@@ -153,6 +154,7 @@ def main():
     train_instance = None
     constants.FLAG_COREF=args.coref
     constants.FLAG_PROP=args.prop
+    constants.FLAG_RNE=args.rne
     constants.FLAG_DEPPARSER=args.depparser
 
     # using corenlp to preprocess the sentences 
@@ -303,6 +305,7 @@ def main():
         print "Parser Config:"
         print "Incorporate Coref Information: %s"%(constants.FLAG_COREF)
         print "Incorporate SRL Information: %s"%(constants.FLAG_PROP)
+        print "Substitue the normal name entity tag with rich name entity tag: %s"%(constants.FLAG_RNE)
         print "Dependency parser used: %s"%(constants.FLAG_DEPPARSER)
         train_instances = preprocess(amr_file,START_SNLP=False)        
         if args.dev: dev_instances = preprocess(args.dev,START_SNLP=False)
