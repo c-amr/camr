@@ -329,6 +329,8 @@ def preprocess(input_file,START_SNLP=True,INPUT_AMR='amr'):
             amr = AMR.parse_string(amr_strings[i])
             if 'alignments' in comments[i]:
                 alignment,s2c_alignment = Aligner.readJAMRAlignment(amr,comments[i]['alignments'])
+                # use verbalization list to fix the unaligned tokens
+                Aligner.postProcessVerbList(amr, comments[i]['tok'], alignment)
                 #ggraph = SpanGraph.init_ref_graph(amr,alignment,instances[i].tokens)
                 ggraph = SpanGraph.init_ref_graph_abt(amr,alignment,s2c_alignment,instances[i].tokens)
                 #ggraph.pre_merge_netag(instances[i])

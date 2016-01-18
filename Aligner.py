@@ -9,6 +9,7 @@ from common.util import english_number,to_order
 from collections import defaultdict
 from nltk.stem.wordnet import WordNetLemmatizer
 from span import Span
+from constants import VERB_LIST
 #from nltk.corpus import wordnet as wn
 #class regex_pattern:
 #    TempQuantity = '(?P<quant>[0-9]+)(?P<unit>year|month?)s?'
@@ -120,7 +121,7 @@ class Aligner():
     @staticmethod
     def readJAMRAlignment(amr,JAMR_alignment):
         alignment = defaultdict(list)
-        s2c_alignment =  defaultdict(list)
+        s2c_alignment =  defaultdict(list) # span to concept mapping
         for one_alignment in JAMR_alignment.split():
             if one_alignment.startswith('*'): continue
             offset, fragment = one_alignment.split('|')
@@ -142,6 +143,7 @@ class Aligner():
                 tags = []
                 level = 0
                 all_variables = []
+                succ_variables = []
                 pre_variable = None
                 variable = None
                 while posIDs:
@@ -154,22 +156,34 @@ class Aligner():
                     pre_variable = variable
                     variable = amr.get_variable(pid)
                     if variable == None:
-                        import pdb
-                        pdb.set_trace()
+                        #import pdb
+                        #pdb.set_trace()
+                        raise Exception('Cannot find variable position id of %s'% (variable))
                     
                     if pre_level > level:
                         concept = amr.node_to_concepts[variable]
-                        rel = amr.find_rel(variable,pre_variable)
                         concept_tag = concept
-                        if pre_variable in amr.node_to_concepts:
-                            concept_tag = concept+'@'+rel[0]
+                        #if pre_variable in amr.node_to_concepts:
+                        #    concept_tag = concept+'@'+rel[0]
+                        succ_tags = []
+                        for i,pre_var in enumerate(succ_variables): # revisit all the successors 
+                            rel = amr.find_rel(variable,pre_var)
+                            cpt = amr.node_to_concepts[pre_var]
+                            if rel: succ_tags.append(rel[0]+'@'+cpt)
+                            #if i < len(succ_variables) - 1: tags.insert(0,'=')
+
+                        if succ_tags:tags.insert(0,'='.join(succ_tags))
                         tags.insert(0,concept_tag)
+                        succ_variables = [variable]
                         all_variables.append(variable)
                     else:
                         if variable in amr.node_to_concepts:
                             concept = amr.node_to_concepts[variable]
                             tokens.insert(0,concept)
+                            #rel = amr.find_rel(variable,pre_variable)
+                            #concept_tag = 
                             #tags.insert(0,concept)
+                            succ_variables.append(variable)
                             all_variables.append(variable)
                         else:
                             if variable == '-': # negation
@@ -180,7 +194,21 @@ class Aligner():
                 s2c_alignment[(start,end)].extend(all_variables)
 
         return alignment,s2c_alignment
-        
+
+    @staticmethod
+    def postProcessVerbList(amr, sent, alignment):
+        for i,tok in enumerate(sent.split()):
+            tok = tok.lower()
+            start = i + 1
+            end = i + 2
+            if tok in VERB_LIST:
+                subgraph_list = VERB_LIST[tok] # multiple subgraph may be mapped to the token
+                for subgraph in subgraph_list:
+                    variable, sub_match = amr.get_match(subgraph) # get the first match
+                    if sub_match and variable not in alignment:
+                        span = Span(start, end, tok, ETag('+'.join(sub_match)))
+                        alignment[variable].append(span)
+                
     def apply_align(self,sent,amr):
         """apply the alignment for sentence and its amr"""
         return getattr(self,Aligner.align_table[self.align_type])(sent,amr)
