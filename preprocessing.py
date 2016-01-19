@@ -471,7 +471,7 @@ def preprocess(input_file,START_SNLP=True,INPUT_AMR='amr'):
                 _add_prop(instances,prop_filename,dep_filename)
             
         else:
-            raise FileNotFoundError('Semantic role labeling file %s not found!' % (prop_filename))
+            raise IOError('Semantic role labeling file %s not found!' % (prop_filename))
 
     if constants.FLAG_RNE:
         print >> log, "Using rich name entity instead..."
@@ -479,7 +479,7 @@ def preprocess(input_file,START_SNLP=True,INPUT_AMR='amr'):
         if os.path.exists(rne_filename):
             _substitute_rne(instances, rne_filename)
         else:
-            raise FileNotFoundError('Rich name entity file %s not found!' % (rne_filename))
+            raise IOError('Rich name entity file %s not found!' % (rne_filename))
 
         
     return instances

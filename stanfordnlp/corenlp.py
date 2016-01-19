@@ -308,12 +308,18 @@ class StanfordCoreNLP(object):
         if os.path.exists(prp_filename):
 
             prp_result = open(prp_filename,'r').read()
-            #i = 0
+            i = 0
             for result in prp_result.split('-'*40)[1:]:
-                #if i == 9932:
+                result_list = [line for line in result.split('\r\n') if line != '']
+                #if i == 862:
                 #    import pdb
                 #    pdb.set_trace()
                 #i += 1
+                if len(result_list) == 6:
+                    result_list[3] = result_list[3] + result_list[4]
+                    result_list[4] = result_list[5]
+                    result_list.pop()
+                    result = '\r\n'.join(result_list)
                 
                 try:
                     data = parse_parser_results(result)
