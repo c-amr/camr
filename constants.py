@@ -11,6 +11,7 @@ FLAG_COREF=False
 FLAG_PROP=False
 FLAG_RNE=False
 FLAG_DEPPARSER='stanford'
+FLAG_ONTO=False
 
 # constants
 NOT_APPLY='_NOT_APPLY_'
@@ -232,6 +233,20 @@ def _load_verb_list(path_to_file):
     return verbdict
 
 VERB_LIST = _load_verb_list(PATH_TO_VERB_LIST)
+
+PATH_TO_COUNTRY_LIST='./resources/country-list.csv'
+
+def _load_country_list(path_to_file):
+    countrydict = {}
+    with open(path_to_file,'r') as f:
+        for line in f:
+            line = line.strip()
+            country_name, country_adj, _ = line.split(',', 2)
+            countrydict[country_adj] = country_name
+
+    return countrydict
+    
+COUNTRY_LIST=_load_country_list(PATH_TO_COUNTRY_LIST)
                 
 
 # given different domain, return range of split corpus #TODO: move this part to config file

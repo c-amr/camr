@@ -404,6 +404,27 @@ class Parser(object):
 
         return (step,state)
 
+    def parse_bs(self, instance):
+        '''
+        parse using beam search
+        '''
+        state = Parser.State.init_state(instance, self.verbose)
+        ref_graph = instance.gold_graph
+        step = 0
+
+        beams = [[state]]
+        last_diff = 0
+
+        while True:
+
+            buf = []
+            gold_state = None
+            for prev in beams[-1]:
+                for action in prev.get_possible_actions():
+                    pass
+
+        
+
     def output_weight(self,act_ind,label_index,feats,actions):
         '''for debug '''
         label_ind = label_index if label_index is not None else 0

@@ -321,8 +321,8 @@ class Model():
         aux_weight = self.aux_weight
         #avg_weight = self.avg_weight
 
-        #self.weight = None
-        #self.aux_weight = None
+        self.weight = None
+        self.aux_weight = None
         #self.avg_weight = None
         #try:
         #    np.save(open(model_filename+'.weight', 'wb'),avg_weight)
@@ -331,7 +331,8 @@ class Model():
         #    pass
             
         try:
-            with contextlib.closing(bz2.BZ2File(model_filename, 'wb')) as f:
+            #with contextlib.closing(bz2.BZ2File(model_filename, 'wb')) as f:
+            with open(model_filename, 'wb') as f:
                 pickle.dump(self,f,pickle.HIGHEST_PROTOCOL)
         except:
             print >> sys.stderr, 'Saving model error', sys.exc_info()[0]
@@ -346,7 +347,8 @@ class Model():
     @staticmethod
     def load_model(model_filename):
         
-        with contextlib.closing(bz2.BZ2File(model_filename, 'rb')) as f:
+        #with contextlib.closing(bz2.BZ2File(model_filename, 'rb')) as f:
+        with open(model_filename, 'rb') as f:
             model = pickle.load(f)
         # deal with module name conflict
         #tmp = sys.path.pop(0)

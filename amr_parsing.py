@@ -138,6 +138,7 @@ def main():
     arg_parser.add_argument('--coref',action='store_true',help='flag to enable coreference information')
     arg_parser.add_argument('--prop',action='store_true',help='flag to enable semantic role labeling information')
     arg_parser.add_argument('--rne',action='store_true',help='flag to enable rich name entity')
+    arg_parser.add_argument('--onto',action='store_true',help='flag to enable charniak parse result trained on ontonotes')
     arg_parser.add_argument('--model',help='specify the model file')
     arg_parser.add_argument('--feat',help='feature template file')
     arg_parser.add_argument('-iter','--iterations',default=1,type=int,help='training iterations')
@@ -155,6 +156,7 @@ def main():
     constants.FLAG_COREF=args.coref
     constants.FLAG_PROP=args.prop
     constants.FLAG_RNE=args.rne
+    constants.FLAG_ONTO=args.onto
     constants.FLAG_DEPPARSER=args.depparser
 
     # using corenlp to preprocess the sentences 
@@ -306,6 +308,7 @@ def main():
         print "Incorporate Coref Information: %s"%(constants.FLAG_COREF)
         print "Incorporate SRL Information: %s"%(constants.FLAG_PROP)
         print "Substitue the normal name entity tag with rich name entity tag: %s"%(constants.FLAG_RNE)
+        print "Using charniak parser trained on ontonotes: %s"%(constants.FLAG_ONTO)
         print "Dependency parser used: %s"%(constants.FLAG_DEPPARSER)
         train_instances = preprocess(amr_file,START_SNLP=False)        
         if args.dev: dev_instances = preprocess(args.dev,START_SNLP=False)
@@ -342,7 +345,7 @@ def main():
                 _,parsed_amr = parser.parse_corpus_test(dev_instances)
                 write_parsed_amr(parsed_amr,dev_instances,args.dev,args.section+'.'+str(iter)+'.parsed')
                 if args.smatcheval:
-                    smatch_path = "./smatch_2.0/smatch.py"
+                    smatch_path = "./smatch_2.0.2/smatch.py"
                     python_path = 'python'
                     options = '--pr -f'
                     parsed_filename = args.dev+'.'+args.section+'.'+str(iter)+'.parsed'
@@ -375,7 +378,7 @@ def main():
         #pickle.dump(test_instances,open('data/eval/%s_instances.pkl'%(amr_file),'wb'),pickle.HIGHEST_PROTOCOL)
         print >> experiment_log ,"DONE PARSING"
         if args.smatcheval:
-            smatch_path = "./smatch_2.0/smatch.py"
+            smatch_path = "./smatch_2.0.2/smatch.py"
             python_path = 'python'
             options = '--pr -f'
             parsed_filename = amr_file+'.'+args.section+'.parsed'

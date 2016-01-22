@@ -337,7 +337,7 @@ class GraphState(object):
                 else:
                     assert False
             
-        s0_atomics = GraphState.sent[self.idx].copy() if isinstance(self.idx,int) else ABT_TOKEN#GraphState.abt_tokens[self.idx]
+        s0_atomics = GraphState.sent[self.idx].copy() if isinstance(self.idx,int) else ABT_TOKEN #GraphState.abt_tokens[self.idx]
         s0_brown_repr = BROWN_CLUSTER[s0_atomics['form']]
         s0_atomics['brown4'] = s0_brown_repr[:4] if len(s0_brown_repr) > 3 else s0_brown_repr
         s0_atomics['brown6'] = s0_brown_repr[:6] if len(s0_brown_repr) > 5 else s0_brown_repr
@@ -1030,6 +1030,8 @@ class GraphState(object):
             core_var = None
             tokens_in_span = GraphState.sent[node.start:node.end] if isinstance(node_id,int) else node.words
             if isinstance(node_tag,ETag):
+                # normalize country adjective
+
                 foo = amr[variable]
                 pre_abs_id = None
                 rel = None
@@ -1078,7 +1080,16 @@ class GraphState(object):
                 
                 rel_in_span = 'op' if rel is None else rel
                 for i,tok in enumerate(tokens_in_span):
+                    ###########
+                    tok['form'] = tok['form'].replace(':','-') # handle format exceptions
+                    if node_tag == 'country+name@name+name':
+                        if tok['form'] in COUNTRY_LIST:
+                            tok['form'] = COUNTRY_LIST[tok['form']]
+
+                    ###########
+                    
                     foo = amr[tok['form']]
+                    
                     if last_abs_tag == 'name':
                         amr._add_triple(last_abs_id,'op'+str(i+1),StrLiteral(tok['form']))
                     elif last_abs_tag == 'date-entity':
@@ -1158,6 +1169,7 @@ class GraphState(object):
                     foo = amr[variable]
                 else:
                     foo = amr[variable]
+                    node_tag = node_tag.replace(':','-')
                     amr.node_to_concepts[variable] = node_tag # concept tag
                 
             return variable,core_var
