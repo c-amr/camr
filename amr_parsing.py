@@ -132,13 +132,16 @@ def main():
     arg_parser.add_argument('-s','--start_step',type=int,default=0,help='specify which step to begin oracle testing;for debug')
     #arg_parser.add_argument('-i','--input_file',help='the input: preprocessed data instances file for aligner or training')
     arg_parser.add_argument('-d','--dev',help='development file')
+    arg_parser.add_argument('-a','--add',help='additional training file')
     arg_parser.add_argument('-as','--actionset',choices=['basic'],default='basic',help='choose different action set')
     arg_parser.add_argument('-m','--mode',choices=['preprocess','test_gold_graph','align','userGuide','oracleGuide','train','parse','eval'],help="preprocess:generate pos tag, dependency tree, ner\n" "align:do alignment between AMR graph and sentence string")
     arg_parser.add_argument('-dp','--depparser',choices=['stanford','stanfordConvert','stdconv+charniak','clear','mate','turbo'],default='stdconv+charniak',help='choose the dependency parser')
     arg_parser.add_argument('--coref',action='store_true',help='flag to enable coreference information')
     arg_parser.add_argument('--prop',action='store_true',help='flag to enable semantic role labeling information')
     arg_parser.add_argument('--rne',action='store_true',help='flag to enable rich name entity')
-    arg_parser.add_argument('--onto',action='store_true',help='flag to enable charniak parse result trained on ontonotes')
+    arg_parser.add_argument('--verblist',action='store_true',help='flag to enable verbalization list')
+    #arg_parser.add_argument('--onto',action='store_true',help='flag to enable charniak parse result trained on ontonotes')
+    arg_parser.add_argument('--onto',choices=['onto','onto+bolt','wsj'],default='wsj',help='choose which charniak parse result trained on ontonotes')
     arg_parser.add_argument('--model',help='specify the model file')
     arg_parser.add_argument('--feat',help='feature template file')
     arg_parser.add_argument('-iter','--iterations',default=1,type=int,help='training iterations')
@@ -156,6 +159,7 @@ def main():
     constants.FLAG_COREF=args.coref
     constants.FLAG_PROP=args.prop
     constants.FLAG_RNE=args.rne
+    constants.FLAG_VERB=args.verblist
     constants.FLAG_ONTO=args.onto
     constants.FLAG_DEPPARSER=args.depparser
 
@@ -308,9 +312,11 @@ def main():
         print "Incorporate Coref Information: %s"%(constants.FLAG_COREF)
         print "Incorporate SRL Information: %s"%(constants.FLAG_PROP)
         print "Substitue the normal name entity tag with rich name entity tag: %s"%(constants.FLAG_RNE)
+        print "Using verbalization list: %s"%(constants.FLAG_VERB)
         print "Using charniak parser trained on ontonotes: %s"%(constants.FLAG_ONTO)
         print "Dependency parser used: %s"%(constants.FLAG_DEPPARSER)
-        train_instances = preprocess(amr_file,START_SNLP=False)        
+        train_instances = preprocess(amr_file,START_SNLP=False)
+        if args.add: train_instances = train_instances + preprocess(args.add,START_SNLP=False)
         if args.dev: dev_instances = preprocess(args.dev,START_SNLP=False)
 
 
@@ -330,6 +336,11 @@ def main():
         model.setup(action_type=args.actionset,instances=train_instances,parser=parser,feature_templates_file=feat_template)
         
         print >> experiment_log, "BEGIN TRAINING!"
+        best_fscore = 0.0
+        best_pscore = 0.0
+        best_rscore = 0.0
+        best_model = None
+        best_iter = 1
         for iter in xrange(1,args.iterations+1):
             print >> experiment_log, "shuffling training instances"
             random.shuffle(train_instances)
@@ -338,22 +349,36 @@ def main():
             begin_updates = parser.perceptron.get_num_updates()
             parser.parse_corpus_train(train_instances)
             parser.perceptron.average_weight()
-            #model.save_model(args.model+'-iter'+str(iter)+'-'+str(int(time.time()))+'.m')
-            model.save_model(args.model+'-iter'+str(iter)+'.m')
+            
             if args.dev:
                 print >> experiment_log ,"Result on develop set:"                
                 _,parsed_amr = parser.parse_corpus_test(dev_instances)
-                write_parsed_amr(parsed_amr,dev_instances,args.dev,args.section+'.'+str(iter)+'.parsed')
+                parsed_suffix = args.section+'.'+args.model.split('.')[-1]+'.'+str(iter)+'.parsed'
+                write_parsed_amr(parsed_amr,dev_instances,args.dev,parsed_suffix)
                 if args.smatcheval:
                     smatch_path = "./smatch_2.0.2/smatch.py"
                     python_path = 'python'
                     options = '--pr -f'
-                    parsed_filename = args.dev+'.'+args.section+'.'+str(iter)+'.parsed'
+                    parsed_filename = args.dev+'.'+parsed_suffix
                     command = '%s %s %s %s %s' % (python_path, smatch_path, options, parsed_filename, args.dev)
                     
                     print 'Evaluation using command: ' + (command)
-                    print subprocess.check_output(command, stderr=subprocess.STDOUT, shell=True)
+                    #print subprocess.check_output(command, stderr=subprocess.STDOUT, shell=True)
+                    eval_output = subprocess.check_output(command, stderr=subprocess.STDOUT, shell=True)
+                    print eval_output
+                    pscore = float(eval_output.split('\n')[0].split(':')[1].rstrip())
+                    rscore = float(eval_output.split('\n')[1].split(':')[1].rstrip())
+                    fscore = float(eval_output.split('\n')[2].split(':')[1].rstrip())
+                    if fscore > best_fscore:
+                        best_model = model
+                        best_iter = iter
+                        best_fscore = fscore
+                        best_pscore = pscore
+                        best_rscore = rscore
 
+        if best_model is not None:
+            print >> experiment_log, "Best result on iteration %d:\n Precision: %f\n Recall: %f\n F-score: %f" % (best_iter, best_pscore, best_rscore, best_fscore)
+            best_model.save_model(args.model+'.m')
         print >> experiment_log ,"DONE TRAINING!"
         
     elif args.mode == 'parse': # actual parsing
@@ -369,7 +394,8 @@ def main():
         parser = Parser(model=model,oracle_type=DET_T2G_ORACLE_ABT,action_type=args.actionset,verbose=args.verbose,elog=experiment_log)
         print >> experiment_log ,"BEGIN PARSING"
         span_graph_pairs,results = parser.parse_corpus_test(test_instances)
-        write_parsed_amr(results,test_instances,amr_file,suffix='%s.parsed'%(args.section))
+        parsed_suffix = '%s.%s.parsed'%(args.section,args.model.split('.')[-2])
+        write_parsed_amr(results,test_instances,amr_file,suffix=parsed_suffix)
         #write_span_graph(span_graph_pairs,test_instances,amr_file,suffix='spg.50')
         ################
         # for eval     #
@@ -381,7 +407,7 @@ def main():
             smatch_path = "./smatch_2.0.2/smatch.py"
             python_path = 'python'
             options = '--pr -f'
-            parsed_filename = amr_file+'.'+args.section+'.parsed'
+            parsed_filename = amr_file+'.'+parsed_suffix
             command = '%s %s %s %s %s' % (python_path,smatch_path,options,parsed_filename, amr_file)
                     
             print 'Evaluation using command: ' + (command)

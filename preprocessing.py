@@ -52,7 +52,7 @@ def readAMREval(eval_file_path):
     '''
     read in semeval evaluation format (without amr)
     '''
-    eval_file = codecs.open(eval_file_path,'r',encoding='macroman')
+    eval_file = codecs.open(eval_file_path,'r',encoding='utf-8')
     comment_list = []
     comment = OrderedDict()
     #amr_list = []
@@ -145,7 +145,11 @@ def _load_cparse(cparse_filename):
 
 def _fix_prop_head(inst,ctree,start_index,height):
     head_index = None
-    tree_pos = ctree.leaf_treeposition(start_index)
+    try:
+        tree_pos = ctree.leaf_treeposition(start_index)
+    except IndexError:
+        import pdb
+        pdb.set_trace()
     span_root = ctree[tree_pos[:-(height+1)]]
     end_index = start_index + len(span_root.leaves())
     cur = inst.tokens[start_index+1]
@@ -330,7 +334,7 @@ def preprocess(input_file,START_SNLP=True,INPUT_AMR='amr'):
             if 'alignments' in comments[i]:
                 alignment,s2c_alignment = Aligner.readJAMRAlignment(amr,comments[i]['alignments'])
                 # use verbalization list to fix the unaligned tokens
-                Aligner.postProcessVerbList(amr, comments[i]['tok'], alignment)
+                if constants.FLAG_VERB: Aligner.postProcessVerbList(amr, comments[i]['tok'], alignment)
                 #ggraph = SpanGraph.init_ref_graph(amr,alignment,instances[i].tokens)
                 ggraph = SpanGraph.init_ref_graph_abt(amr,alignment,s2c_alignment,instances[i].tokens)
                 #ggraph.pre_merge_netag(instances[i])
@@ -419,7 +423,12 @@ def preprocess(input_file,START_SNLP=True,INPUT_AMR='amr'):
         _add_dependency(instances,dep_result,constants.FLAG_DEPPARSER)
 
     elif constants.FLAG_DEPPARSER == "stdconv+charniak":
-        dep_filename = tok_sent_filename+'.charniak.onto.parse.dep' if constants.FLAG_ONTO else tok_sent_filename+'.charniak.parse.dep'
+        if constants.FLAG_ONTO == 'onto':
+            dep_filename = tok_sent_filename+'.charniak.onto.parse.dep'
+        elif constants.FLAG_ONTO == 'onto+bolt':
+            dep_filename = tok_sent_filename+'.charniak.onto+bolt.parse.dep'
+        else:
+            dep_filename = tok_sent_filename+'.charniak.parse.dep'            
         if not os.path.exists(dep_filename):
             dparser = CharniakParser()
             dparser.parse(tok_sent_filename)
@@ -463,7 +472,7 @@ def preprocess(input_file,START_SNLP=True,INPUT_AMR='amr'):
     
     if constants.FLAG_PROP:
         print >> log, "Adding SRL information..."
-        prop_filename = tok_sent_filename + '.prop'
+        prop_filename = tok_sent_filename + '.prop' if constants.FLAG_ONTO != 'onto+bolt' else tok_sent_filename + '.onto+bolt.prop'
         if os.path.exists(prop_filename):
             if constants.FLAG_DEPPARSER == "stdconv+charniak":
                 _add_prop(instances,prop_filename,dep_filename,FIX_PROP_HEAD=True)
