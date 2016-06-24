@@ -1,7 +1,7 @@
-Brandeis transition-based AMR Parser
+CAMR: A transition-based AMR Parser
 ==========
 
-A Transition-based parser for [Abstract Meaning Representation](http://amr.isi.edu/).
+CAMR is a transition-based, tree-to-graph parser for the [Abstract Meaning Representation](http://amr.isi.edu/) of a sentence. It is a product of an on-going collaboration between the [Chinese Language Processing Group](http://www.cs.brandeis.edu/~clp/Lab/Home.html) at Brandeis University and [`cemantix.org`](http://cemantix.org)
 
 Reference:
 
