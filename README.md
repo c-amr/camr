@@ -61,7 +61,9 @@ This will give you the tokenized sentences(.tok), POS tag and name entity (.prp)
 
 ## Parsing
 Download the following model: 
+
 [LDC2014T12](http://www.cs.brandeis.edu/~cwang24/files/amr-anno-1.0.train.m.tar.gz): trained on training set of LDC2014T12.
+
 [SemEval2016](http://www.cs.brandeis.edu/~cwang24/files/amr-semeval-all.train.m.tar.gz): trained on training set of SemEval 2016 Task 8.
 
 Uncompress the model file, then use the following command to parse the sentence:
