@@ -64,4 +64,5 @@ smatch*/
 *~
 scripts/*~
 *.gz
-
+*.zip
+log/
