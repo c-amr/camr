@@ -28,9 +28,11 @@ import re
 from data import Data
 
 VERBOSE = True
-STATE_START, STATE_TEXT, STATE_WORDS, STATE_TREE, STATE_DEPENDENCY, STATE_COREFERENCE = 0, 1, 2, 3, 4, 5
+STATE_START, STATE_TEXT, STATE_WORDS, STATE_TREE, STATE_DEPENDENCY, STATE_COREFERENCE, STATE_SENT_ERROR, STATE_TEXT_ERROR, STATE_WORD_ERROR = 0, 1, 2, 3, 4, 5, 6, 7, 8
 WORD_PATTERN = re.compile('\[([^\]]+)\]')
+WORD_ERROR_PATTERN = re.compile('\[([^\]]+)')
 CR_PATTERN = re.compile(r"\((\d*),(\d*),\[(\d*),(\d*)\)\) -> \((\d*),(\d*),\[(\d*),(\d*)\)\), that is: \"(.*)\" -> \"(.*)\"")
+SENTENCE_NO_PATTERN = re.compile(r"^Sentence\s*#\d+\s*\(\d+\s*tokens\):")
 
 def parse_bracketed(s):
     '''Parse word features [abc=... def = ...]
@@ -63,7 +65,7 @@ def parse_parser_results(text):
     """
 
     data = Data()
-    
+
     state = STATE_START
     #for line in re.split("\r\n(?![^\[]*\])",text):
     for line in re.split("\r\n", text):
@@ -73,7 +75,7 @@ def parse_parser_results(text):
             break
         if line.startswith("Sentence #"):
             state = STATE_TEXT
-        
+
         elif state == STATE_TEXT:
             Data.newSen()
             data.addText(line)
@@ -119,8 +121,8 @@ def parse_parser_results(text):
                 '''
         elif state == STATE_COREFERENCE:
             if "Coreference set" in line:
-##                if 'coref' not in results:
-##                    results['coref'] = []
+                #if 'coref' not in results:
+                #    results['coref'] = []
                 coref_set = []
                 data.addCoref(coref_set)
             else:
@@ -130,6 +132,149 @@ def parse_parser_results(text):
                     coref_set.append(((src_word, src_i, src_pos, src_l, src_r), (sink_word, sink_i, sink_pos, sink_l, sink_r)))
     
     return data
+
+
+def parse_parser_results_new(text):
+    """ This is the nasty bit of code to interact with the command-line
+    interface of the CoreNLP tools.  Takes a string of the parser results
+    and then returns a Python list of dictionaries, one for each parsed
+    sentence.
+
+    updated for newer version of stanford corenlp -- 2015
+    """
+    data_list = []
+    data = None
+    lastline = None
+    following_line = None
+    state = STATE_START
+    #for line in re.split("\r\n(?![^\[]*\])",text):
+    seqs = re.split("\r\n", text)
+    i = 0
+
+    #for line in re.split("\r\n", text):
+    while i < len(seqs):
+        line = seqs[i]
+        line = line.strip()
+
+        if line.startswith('NLP>'): # end
+            if data: data_list.append(data) # add last one
+            break
+        if line.startswith("Sentence #"):
+            if data: data_list.append(data)
+            data = Data()
+            if SENTENCE_NO_PATTERN.match(line):
+                state = STATE_TEXT
+            else:
+                lastline = line
+                state = STATE_SENT_ERROR
+            i += 1
+            
+        elif state == STATE_SENT_ERROR:
+            line = lastline + line
+            assert SENTENCE_NO_PATTERN.match(line) is not None
+            state = STATE_TEXT
+            i += 1
+            
+        elif state == STATE_TEXT_ERROR:
+            line = line + following_line
+            data.addText(line)
+            state = STATE_WORDS
+            i += 2
+        
+        elif state == STATE_TEXT:
+            Data.newSen()
+            data.addText(line)
+            state = STATE_WORDS
+            i += 1
+        
+        elif state == STATE_WORDS:
+            if len(line) == 0:
+                continue
+            if not line.startswith("[Text="):
+                #raise Exception('Parse error. Could not find "[Text=" in: %s' % line)
+                print >> sys.stderr, 'Parse error. Could not find "[Text=" in: %s' % line
+                print >> sys.stderr, 'Attempt to fixing error.'
+                following_line = line
+                state = STATE_TEXT_ERROR
+                i -= 1
+                continue
+                
+            #for s in WORD_PATTERN.findall(line):
+            wline = line
+            while WORD_PATTERN.match(wline):
+                t = parse_bracketed(wline[1:-1])
+                if t[0] == '':
+                    i += 1
+                    wline = seqs[i]
+                    continue
+                data.addToken(t[0], t[1][u'CharacterOffsetBegin'], t[1][u'CharacterOffsetEnd'],
+                              t[1][u'Lemma'],t[1][u'PartOfSpeech'],t[1][u'NamedEntityTag'])
+                i += 1
+                wline = seqs[i]
+
+            if WORD_ERROR_PATTERN.match(wline): # handle format error
+                wline = wline + seqs[i+1]
+                wline = wline.strip()
+                t = parse_bracketed(wline[1:-1])
+                data.addToken(t[0], t[1][u'CharacterOffsetBegin'], t[1][u'CharacterOffsetEnd'],
+                              t[1][u'Lemma'],t[1][u'PartOfSpeech'],t[1][u'NamedEntityTag'])
+                i+=2
+                state = STATE_WORDS
+                continue
+            state = STATE_TREE
+            parsed = []
+        
+        elif state == STATE_TREE:
+            if len(line) == 0:
+                state = STATE_DEPENDENCY
+                parsed = " ".join(parsed)
+                i += 1
+                #data.addTree(Tree.parse(parsed))
+            else:
+                parsed.append(line)
+                i += 1
+        
+        elif state == STATE_DEPENDENCY:
+            if len(line) == 0:
+                state = STATE_COREFERENCE
+            else:
+                pass
+                '''
+                # don't need here
+                split_entry = re.split("\(|, ", line[:-1])
+                if len(split_entry) == 3:
+                    rel, l_lemma, r_lemma = split_entry
+                    m = re.match(r'(?P<lemma>.+)-(?P<index>[^-]+)', l_lemma)
+                    l_lemma, l_index = m.group('lemma'), m.group('index')
+                    m = re.match(r'(?P<lemma>.+)-(?P<index>[^-]+)', r_lemma)
+                    r_lemma, r_index = m.group('lemma'), m.group('index')
+
+                    data.addDependency( rel, l_lemma, r_lemma, l_index, r_index)
+                '''
+
+            i += 1
+        elif state == STATE_COREFERENCE:
+            if "Coreference set" in line:
+                #if 'coref' not in results:
+                #    results['coref'] = []
+                coref_set = []
+                data.addCoref(coref_set)
+            else:
+                for src_i, src_pos, src_l, src_r, sink_i, sink_pos, sink_l, sink_r, src_word, sink_word in CR_PATTERN.findall(line):
+                    src_i, src_pos, src_l, src_r = int(src_i), int(src_pos), int(src_l), int(src_r)
+                    sink_i, sink_pos, sink_l, sink_r = int(sink_i), int(sink_pos), int(sink_l), int(sink_r)
+                    coref_set.append(((src_word, src_i, src_pos, src_l, src_r), (sink_word, sink_i, sink_pos, sink_l, sink_r)))
+
+            i += 1
+        else:
+            i += 1
+        
+    return data_list
+
+
+
+
+
 
 def add_sep_dependency(instances,result):
     i = 0
@@ -167,15 +312,25 @@ class StanfordCoreNLP(object):
         Checks the location of the jar files.
         Spawns the server as a process.
         """
-        jars = ["stanford-corenlp-3.2.0.jar",
-                "stanford-corenlp-3.2.0-models.jar",
+        #jars = ["stanford-corenlp-3.2.0.jar",
+        #        "stanford-corenlp-3.2.0-models.jar",
+        #        "joda-time.jar",
+        #        "xom.jar",
+        #        "jollyday.jar"]
+
+        jars = ["stanford-corenlp-3.5.2.jar",
+                "stanford-corenlp-3.5.2-models.jar",
                 "joda-time.jar",
                 "xom.jar",
-                "jollyday.jar"]
+                "jollyday.jar",
+                "protobuf.jar",
+                "javax.json.jar",
+                "ejml-0.23.jar"]
+        
        
         # if CoreNLP libraries are in a different directory,
         # change the corenlp_path variable to point to them
-        corenlp_path = os.path.relpath(__file__).split('/')[0]+"/stanford-corenlp-full-2013-06-20/"
+        corenlp_path = os.path.relpath(__file__).split('/')[0]+"/stanford-corenlp-full-2015-04-20/"
         #corenlp_path = "stanford-corenlp-full-2013-06-20/"
         
         java_path = "java"
@@ -308,29 +463,37 @@ class StanfordCoreNLP(object):
         if os.path.exists(prp_filename):
 
             prp_result = open(prp_filename,'r').read()
-            i = 0
-            for result in prp_result.split('-'*40)[1:]:
-                result_list = [line for line in result.split('\r\n') if line != '']
+            #i = 0
+            for i, result in enumerate(prp_result.split('-'*40)[1:]):
+                #result_list = [line for line in result.split('\r\n') if line != '']
                 #if i == 862:
                 #    import pdb
                 #    pdb.set_trace()
                 #i += 1
-                if len(result_list) == 6:
-                    result_list[3] = result_list[3] + result_list[4]
-                    result_list[4] = result_list[5]
-                    result_list.pop()
-                    result = '\r\n'.join(result_list)
                 
+                # fix additional newline bug for old version of stanford nlp
+                #if len(result_list) == 6:
+                #    result_list[3] = result_list[3] + result_list[4]
+                #    result_list[4] = result_list[5]
+                #    result_list.pop()
+                #    result = '\r\n'.join(result_list)
+                if i > 0 and i % 100 == 0:
+                    sys.stdout.write('.')
+                    sys.stdout.flush()
+        
                 try:
                     data = parse_parser_results(result)
                 except Exception, e:
                     if VERBOSE: print traceback.format_exc()
                     raise e
-
-                instances.append(data)
+                if isinstance(data, list):
+                    instances += data
+                else:
+                    instances.append(data)
                 #if len(instances) == 4291:
                 #    import pdb
                 #    pdb.set_trace()
+            sys.stdout.write('\n')
 
         else:
             output_prp = open(prp_filename,'w')          
@@ -339,12 +502,14 @@ class StanfordCoreNLP(object):
                 result = self._parse(line)
                 output_prp.write("%s\n%s"%('-'*40,result))
                 try:
-                    data = parse_parser_results(result)
+                    data = parse_parser_results_new(result)
                 except Exception, e:
                     if VERBOSE: print traceback.format_exc()
                     raise e
-
-                instances.append(data)
+                if isinstance(data, list):
+                    instances += data
+                else:
+                    instances.append(data)
             output_prp.close()
 
         '''

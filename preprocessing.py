@@ -9,6 +9,7 @@ from common.SpanGraph import SpanGraph
 from depparser import CharniakParser,StanfordDepParser,ClearDepParser,TurboDepParser, MateDepParser
 from collections import OrderedDict
 import constants
+import xml.etree.ElementTree as ET
 
 log = sys.stdout
 
@@ -81,6 +82,7 @@ def _write_sentences(file_path,sentences):
     """
     write out the sentences to file
     """
+    print >> log, "Writing sentence file to %s" % file_path 
     output = codecs.open(file_path,'w',encoding='utf-8')
     for sent in sentences:
         output.write(sent+'\n')
@@ -92,7 +94,8 @@ def _write_tok_sentences(file_path,instances,comments=None):
         if comments:
             output_tok.write("%s %s\n" % (comments[i]['id'],' '.join(inst.get_tokenized_sent())))
         else:
-            output_tok.write("%s\n" % (' '.join(inst.get_tokenized_sent())))
+            sent = ' '.join(inst.get_tokenized_sent())
+            output_tok.write("%s\n" % sent)
     output_tok.close()
 
 def _write_tok_amr(file_path,amr_file,instances):
@@ -263,7 +266,7 @@ def _add_dependency(instances,result,FORMAT="stanford"):
                     m = re.match(r'(?P<lemma>.+)-(?P<index>[^-]+)', l_lemma)
                     l_lemma, l_index = m.group('lemma'), m.group('index')
                     # some string may start with @; change the segmenter
-                    m = re.match(r'(?P<lemma>[^\^]+|\^(?=-))(\^(?P<trace>[^-]+))?-(?P<index>[^-]+)', r_lemma)
+                    m = re.match(r'(?P<lemma>[^\^]+|\^*(?=-))(\^(?P<trace>[^-]+))?-(?P<index>[^-]+)', r_lemma)
                     try:
                         r_lemma,r_trace, r_index = m.group('lemma'), m.group('trace'), m.group('index')
                     except AttributeError:
@@ -285,7 +288,35 @@ def _add_dependency(instances,result,FORMAT="stanford"):
     else:
         raise ValueError("Unknown dependency format!")
 
-def preprocess(input_file,START_SNLP=True,INPUT_AMR='amr'):
+def load_xml_instances(input_xml):
+    tree = ET.parse(input_xml)
+    root = tree.getroot()
+    instances = []
+    nb_sent = 0
+    nb_tok = 0
+    for doc in root.iter('document'):
+        for sentences in root.iter('sentences'):
+            for sentence in sentences.iter('sentence'):
+                if nb_sent % 1000 == 0:
+                    print >> log, "%d ...." % nb_sent ,
+                    sys.stdout.flush()
+                data = Data()
+                text = ''
+                data.newSen()
+                for tokens in sentence.iter('tokens'):
+                    for tok in tokens.iter('token'):
+                        nb_tok += 1
+                        data.addToken(tok.find('word').text, tok.find('CharacterOffsetBegin').text,
+                                      tok.find('CharacterOffsetEnd').text, tok.find('lemma').text, tok.find('POS').text, tok.find('NER').text)
+                instances.append(data)
+                nb_sent+=1
+
+    print >> log, '\n'
+    print >> log, "Total number of sentences: %d, number of tokens: %s" % (nb_sent, nb_tok)
+
+    return instances
+            
+def preprocess(input_file,START_SNLP=True,INPUT_AMR='amr',PRP_FORMAT='plain'):
     '''nasty function'''
     tmp_sent_filename = None
     instances = None
@@ -306,19 +337,32 @@ def preprocess(input_file,START_SNLP=True,INPUT_AMR='amr'):
         if not os.path.exists(tmp_sent_filename): # no cache found
             _write_sentences(tmp_sent_filename,sentences)
 
-        tmp_prp_filename = tmp_sent_filename+'.prp'
+        tmp_prp_filename = None
+        instances = None
+        if PRP_FORMAT == 'plain':
+            tmp_prp_filename = tmp_sent_filename+'.prp'
+            
+            
+            proc1 = StanfordCoreNLP()
 
-        proc1 = StanfordCoreNLP()
+            # preprocess 1: tokenization, POS tagging and name entity using Stanford CoreNLP
 
-        # preprocess 1: tokenization, POS tagging and name entity using Stanford CoreNLP
+            if START_SNLP and not os.path.exists(tmp_prp_filename):
+                print >> log, "Start Stanford CoreNLP..."
+                proc1.setup()
 
-        if START_SNLP and not os.path.exists(tmp_prp_filename):
-            print >> log, "Start Stanford CoreNLP..."
-            proc1.setup()
+            print >> log, 'Read token,lemma,name entity file %s...' % (tmp_prp_filename)            
+            instances = proc1.parse(tmp_sent_filename)
 
-        print >> log, 'Read token,lemma,name entity file %s...' % (tmp_prp_filename)            
-        instances = proc1.parse(tmp_sent_filename)
-
+        elif PRP_FORMAT == 'xml': # rather than using corenlp plain format; using xml format; also we don't use corenlp wrapper anymore
+            tmp_prp_filename = tmp_sent_filename+'.prp.xml'
+            if not os.path.exists(tmp_prp_filename):
+                raise Exception("No preprocessed xml file found: %s" % tmp_prp_filename)
+            print >> log, 'Read token,lemma,name entity file %s...' % (tmp_prp_filename)
+            instances = load_xml_instances(tmp_prp_filename)
+        else:
+            raise Exception('Unknow preprocessed file format %s' % PRP_FORMAT)
+            
         tok_sent_filename = tmp_sent_filename+'.tok' # write tokenized sentence file
         if not os.path.exists(tok_sent_filename):
             _write_tok_sentences(tok_sent_filename,instances)
@@ -376,21 +420,47 @@ def preprocess(input_file,START_SNLP=True,INPUT_AMR='amr'):
             instances[i].addComment(comments[i])
         
     else:        # input file is sentence
-        tmp_sent_filename = input_file 
-        tmp_prp_filename = tmp_sent_filename+'.prp'
-        
-        proc1 = StanfordCoreNLP()
+        tmp_sent_filename = input_file
 
-        # preprocess 1: tokenization, POS tagging and name entity using Stanford CoreNLP
-        if START_SNLP and not os.path.exists(tmp_prp_filename):
-            print >> log, "Start Stanford CoreNLP ..."
-            proc1.setup()
+        tmp_prp_filename = None
+        instances = None
+        if PRP_FORMAT == 'plain':
+            tmp_prp_filename = tmp_sent_filename+'.prp'
+
+            proc1 = StanfordCoreNLP()
+
+            # preprocess 1: tokenization, POS tagging and name entity using Stanford CoreNLP
+
+            if START_SNLP and not os.path.exists(tmp_prp_filename):
+                print >> log, "Start Stanford CoreNLP..."
+                proc1.setup()
+
+            print >> log, 'Read token,lemma,name entity file %s...' % (tmp_prp_filename)            
             instances = proc1.parse(tmp_sent_filename)
-        elif os.path.exists(tmp_prp_filename): # found cache file
+
+        elif PRP_FORMAT == 'xml': # rather than using corenlp plain format; using xml format; also we don't use corenlp wrapper anymore
+            tmp_prp_filename = tmp_sent_filename+'.xml'
+            if not os.path.exists(tmp_prp_filename):
+                raise Exception("No preprocessed xml file found: %s" % tmp_prp_filename)
             print >> log, 'Read token,lemma,name entity file %s...' % (tmp_prp_filename)
-            instances = proc1.parse(tmp_sent_filename)
+            instances = load_xml_instances(tmp_prp_filename)
         else:
-            raise Exception('No cache file %s has been found. set START_SNLP=True to start corenlp.' % (tmp_prp_filename))
+            raise Exception('Unknow preprocessed file format %s' % PRP_FORMAT)
+
+        
+        # tmp_prp_filename = tmp_sent_filename+'.prp'
+        # proc1 = StanfordCoreNLP()
+
+        # # preprocess 1: tokenization, POS tagging and name entity using Stanford CoreNLP
+        # if START_SNLP and not os.path.exists(tmp_prp_filename):
+        #     print >> log, "Start Stanford CoreNLP ..."
+        #     proc1.setup()
+        #     instances = proc1.parse(tmp_sent_filename)
+        # elif os.path.exists(tmp_prp_filename): # found cache file
+        #     print >> log, 'Read token,lemma,name entity file %s...' % (tmp_prp_filename)
+        #     instances = proc1.parse(tmp_sent_filename)
+        # else:
+        #     raise Exception('No cache file %s has been found. set START_SNLP=True to start corenlp.' % (tmp_prp_filename))
         
 
         tok_sent_filename = tmp_sent_filename+'.tok' # write tokenized sentence file

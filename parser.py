@@ -503,7 +503,7 @@ class Parser(object):
         while not state.is_terminal():
 
             if self.verbose > 0:
-                print >> sys.stderr, state.print_config()
+                #print >> sys.stderr, state.print_config()
                 #print state.A.print_tuples()                                    
                 if DRAW_GRAPH:
                     fname = "graph"+str(state.sentID)+"_s"+str(step)

@@ -37,7 +37,11 @@ class CharniakParser(DepParser):
             for l in f:
                 lineno += 1
                 print >> logs, 'lineno %s, %s'% (lineno, l)
-                parsed_trees = rrp.simple_parse(l.strip().split())
+                try:
+                    parsed_trees = rrp.simple_parse(l.strip().split())
+                except IndexError:
+                    parsed_trees = rrp.simple_parse(l.strip().split()[:64])
+                    
                 parsed_trees += '\n'
                 of.write(parsed_trees)
 

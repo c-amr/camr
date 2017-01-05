@@ -146,6 +146,7 @@ def main():
     arg_parser.add_argument('--feat',help='feature template file')
     arg_parser.add_argument('-iter','--iterations',default=1,type=int,help='training iterations')
     arg_parser.add_argument('amr_file',nargs='?',help='amr annotation file/input sentence file for parsing')
+    arg_parser.add_argument('--prpfmt',choices=['xml','plain'],default='xml',help='preprocessed file format')
     arg_parser.add_argument('--amrfmt',choices=['sent','amr','amreval'],default='sent',help='specifying the input file format')
     arg_parser.add_argument('--smatcheval',action='store_true',help='give evaluation score using smatch')
     arg_parser.add_argument('-e','--eval',nargs=2,help='Error Analysis: give parsed AMR file and gold AMR file')
@@ -165,11 +166,11 @@ def main():
 
     # using corenlp to preprocess the sentences 
     if args.mode == 'preprocess':
-        instances = preprocess(amr_file,START_SNLP=True,INPUT_AMR=args.amrfmt)
+        instances = preprocess(amr_file,START_SNLP=True,INPUT_AMR=args.amrfmt, PRP_FORMAT=args.prpfmt)
         print "Done preprocessing!"
     # preprocess the JAMR aligned amr
     elif args.mode == 'test_gold_graph':     
-        instances = preprocess(amr_file,False)
+        instances = preprocess(amr_file,START_SNLP=False,INPUT_AMR=args.amrfmt, PRP_FORMAT=args.prpfmt)
         #instances = pickle.load(open('data/gold_edge_graph.pkl','rb'))
         gold_amr = []
         for inst in instances:
@@ -243,7 +244,7 @@ def main():
     # test deterministic oracle 
     elif args.mode == 'oracleGuide':
         
-        train_instances = preprocess(amr_file,START_SNLP=False)
+        train_instances = preprocess(amr_file,START_SNLP=False,INPUT_AMR=args.amrfmt, PRP_FORMAT=args.prpfmt)
         try:
             hand_alignments = load_hand_alignments(amr_file+str('.hand_aligned'))
         except IOError:
@@ -315,9 +316,9 @@ def main():
         print "Using verbalization list: %s"%(constants.FLAG_VERB)
         print "Using charniak parser trained on ontonotes: %s"%(constants.FLAG_ONTO)
         print "Dependency parser used: %s"%(constants.FLAG_DEPPARSER)
-        train_instances = preprocess(amr_file,START_SNLP=False)
-        if args.add: train_instances = train_instances + preprocess(args.add,START_SNLP=False)
-        if args.dev: dev_instances = preprocess(args.dev,START_SNLP=False)
+        train_instances = preprocess(amr_file,START_SNLP=False,INPUT_AMR=args.amrfmt,PRP_FORMAT=args.prpfmt)
+        if args.add: train_instances = train_instances + preprocess(args.add,START_SNLP=True,INPUT_AMR=args.amrfmt,PRP_FORMAT=args.prpfmt)
+        if args.dev: dev_instances = preprocess(args.dev,START_SNLP=False,INPUT_AMR=args.amrfmt,PRP_FORMAT=args.prpfmt)
 
 
         if args.section != 'all':
@@ -382,7 +383,7 @@ def main():
         print >> experiment_log ,"DONE TRAINING!"
         
     elif args.mode == 'parse': # actual parsing
-        test_instances = preprocess(amr_file,START_SNLP=False,INPUT_AMR=args.amrfmt)
+        test_instances = preprocess(amr_file,START_SNLP=False,INPUT_AMR=args.amrfmt,PRP_FORMAT=args.prpfmt)
         if args.section != 'all':
             print "Choosing corpus section: %s"%(args.section)
             tcr = constants.get_corpus_range(args.section,'test')
