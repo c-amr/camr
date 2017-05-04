@@ -94,10 +94,13 @@ Uncompress the model file, then use the following command to parse the sentence:
 
 This will give your the parsed AMR file(.parsed) in the same directory of your input sentence file. 
 
+> **Note:** 
+> these models doesn't incorporate the Semantic Role Label feature, so it will give you slightly lower results reported in the papers. We are working on integrating the SRL system into the pipeline.  
+
 # Retrain the parser
 If you would like to retrain the parser, you first have to obtain the alignment in the following section.
 
-##Alignment
+## Alignment
 If you have annotated AMR file, you could first run the preprocessing step:
 	
 	python amr_parsing.py -m preprocess --amrfmt amr [input_amr_file]
@@ -115,4 +118,8 @@ To retrain the model with the provided feature template *basic_abt_brown_feats.t
 
       python2.7 amr_parsing.py -m train --amrfmt amr --verblist --smatcheval --model [path_to_save_model] -iter [iter_number] --feat ./feature/basic_abt_brown_feats.templates [path_to_train_amr_file] -d [path_to_dev_amr_file] > [log_file] 2>&1 &
 
-The parser will be trained using basic feature template mentioned in our NAACL 2015 paper. Since in the preprocessing step we don't include the Semantic Role Labeling part, it wouldn't replicate the optimal results. If you want to retrain the model with different features, you will have to get your hands dirty with the feature template file with examples defined in temp/ folder and modify the feature functions in model.py/newstate.py. 
+The parser will be trained using basic feature template mentioned in our NAACL 2015 paper. 
+
+> **Note:**
+> - Since in the preprocessing step we don't include the Semantic Role Labeling feature, it wouldn't replicate the optimal results. 
+> - If you want to retrain the model with different features, you will have to get your hands dirty with the feature template file with examples defined in temp/ folder and modify the feature functions in model.py/newstate.py. 

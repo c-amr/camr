@@ -146,7 +146,7 @@ def main():
     arg_parser.add_argument('--feat',help='feature template file')
     arg_parser.add_argument('-iter','--iterations',default=1,type=int,help='training iterations')
     arg_parser.add_argument('amr_file',nargs='?',help='amr annotation file/input sentence file for parsing')
-    arg_parser.add_argument('--prpfmt',choices=['xml','plain'],default='xml',help='preprocessed file format')
+    arg_parser.add_argument('--prpfmt',choices=['xml','plain'],default='plain',help='preprocessed file format')
     arg_parser.add_argument('--amrfmt',choices=['sent','amr','amreval'],default='sent',help='specifying the input file format')
     arg_parser.add_argument('--smatcheval',action='store_true',help='give evaluation score using smatch')
     arg_parser.add_argument('-e','--eval',nargs=2,help='Error Analysis: give parsed AMR file and gold AMR file')
