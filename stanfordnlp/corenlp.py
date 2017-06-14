@@ -482,7 +482,7 @@ class StanfordCoreNLP(object):
                     sys.stdout.flush()
         
                 try:
-                    data = parse_parser_results(result)
+                    data = parse_parser_results_new(result)
                 except Exception, e:
                     if VERBOSE: print traceback.format_exc()
                     raise e

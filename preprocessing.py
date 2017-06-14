@@ -274,7 +274,7 @@ def _add_dependency(instances,result,FORMAT="stanford"):
                         pdb.set_trace()
 
                     if r_index != 'null':
-                        #print >> sys.stderr, line
+                        # print >> sys.stderr, line
                         try:
                             instances[i].addDependency( rel, l_index, r_index )
                         except IndexError:
