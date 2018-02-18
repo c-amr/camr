@@ -73,7 +73,8 @@ To setup dependencies, run the following script:
 
 # Parsing with Pre-trained Model
 The input data format for parsing should be raw document with one sentence per line. 
-##Preprocessing
+
+## Preprocessing
 To preprocess the data, run:
    
       python amr_parsing.py -m preprocess [input_sentence_file]
