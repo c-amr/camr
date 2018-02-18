@@ -21,8 +21,8 @@ In other words:
     sudo pip install pexpect unidecode   # unidecode is optional
     git clone git://github.com/dasmith/stanford-corenlp-python.git
 	  cd stanford-corenlp-python
-    wget http://nlp.stanford.edu/software/stanford-corenlp-2012-07-09.tgz
-    tar xvfz stanford-corenlp-2012-07-09.tgz
+    wget http://nlp.stanford.edu/software/stanford-corenlp-[version].tgz
+    tar xvfz stanford-corenlp-[version].tgz
 
 Then, to launch a server:
 
